@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mandays Training Dashboard</title>
+  <title>SkillTrack Analyzer</title>
   <link rel="stylesheet" href="styles.css?v=3">
   <!-- Chart.js for beautiful charts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -19,11 +19,16 @@
     <!-- Header Section -->
     <header class="dashboard-header">
       <div class="header-title-section">
-        <h1>Mandays Analytics</h1>
+        <h1>SkillTrack Analyzer</h1>
         <p>Interactive Training & Employee Development Dashboard</p>
       </div>
       
       <div class="file-upload-container">
+        <div class="sheet-sync-container">
+          <span>🔗</span>
+          <input type="text" id="sheet-url-input" class="sheet-sync-input" placeholder="Google Sheets Link...">
+          <button id="sheet-sync-btn" class="sheet-sync-btn">Sync</button>
+        </div>
         <button id="reset-btn" class="reset-btn hidden">
           <span>🔄</span> Reset to Default Data
         </button>
@@ -392,8 +397,6 @@
     </div>
   </div>
 
-  <!-- Load pre-compiled data first -->
-  <script src="data.js?v=3"></script>
   <!-- Load application logic -->
   <script src="app.js?v=3"></script>
 </body>

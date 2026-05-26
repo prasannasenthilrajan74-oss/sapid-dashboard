@@ -87,6 +87,134 @@ function getRowAttended(row) {
   return row['attended'] || row['Attended'] || '';
 }
 
+// Default Google Sheets URL
+const DEFAULT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbytaI36PDf09D7O2RicMWEkGn-JXiew3zPL6bc3OLGKTc0klmd0gUj9ZCfdg2JvY9Sb/exec';
+
+// Function to convert Google Sheets URL to CSV export URL
+function getGoogleSheetsCsvUrl(urlStr) {
+  if (!urlStr) return null;
+  
+  // If it's a published Google Sheet ("Publish to web")
+  if (urlStr.includes('/pub')) {
+    if (urlStr.includes('output=csv')) {
+      return urlStr;
+    }
+    // Convert HTML published URL to CSV output
+    return urlStr.replace(/\/pub([?#].*)?$/, '/pub?output=csv');
+  }
+
+  const idMatch = urlStr.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (!idMatch) return null;
+  const sheetId = idMatch[1];
+  
+  let gid = '0';
+  const gidMatch = urlStr.match(/[?&#]gid=([0-9]+)/);
+  if (gidMatch) {
+    gid = gidMatch[1];
+  }
+  
+  // Use /gviz/tq endpoint to prevent CORS redirects in browser environments
+  return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}`;
+}
+
+// Function to fetch data from Google Sheets or Apps Script Web App
+async function fetchGoogleSheetsData(sheetUrl) {
+  const isAppsScript = sheetUrl.includes('script.google.com/macros/s/');
+  
+  let csvUrl = sheetUrl;
+  if (!isAppsScript) {
+    csvUrl = getGoogleSheetsCsvUrl(sheetUrl);
+    if (!csvUrl) {
+      alert('Invalid Google Sheets URL format. Please paste a valid link.');
+      return;
+    }
+  }
+
+  // Show a visual loading state in the sync button
+  const syncBtn = document.getElementById('sheet-sync-btn');
+  const originalText = syncBtn ? syncBtn.innerText : 'Sync';
+  if (syncBtn) {
+    syncBtn.innerText = 'Syncing...';
+    syncBtn.disabled = true;
+  }
+
+  try {
+    const response = await fetch(csvUrl);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    let parsedData = [];
+
+    if (isAppsScript) {
+      // It's a JSON response from Apps Script
+      const jsonData = await response.json();
+      
+      // Check if it's a 2D array (e.g. [[header1, header2], [val1, val2]])
+      if (Array.isArray(jsonData) && jsonData.length > 0 && Array.isArray(jsonData[0])) {
+        const headers = jsonData[0];
+        parsedData = [];
+        for (let i = 1; i < jsonData.length; i++) {
+          const row = jsonData[i];
+          const obj = {};
+          headers.forEach((header, colIdx) => {
+            obj[header] = row[colIdx] !== undefined ? row[colIdx] : '';
+          });
+          parsedData.push(obj);
+        }
+      } else if (Array.isArray(jsonData)) {
+        // Already an array of objects
+        parsedData = jsonData;
+      } else {
+        throw new Error('Unexpected JSON format from Google Apps Script.');
+      }
+    } else {
+      // It's a CSV response from Google Sheets Visualization API
+      const csvText = await response.text();
+      // Parse CSV using SheetJS
+      const workbook = XLSX.read(csvText, { type: 'string' });
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+      parsedData = XLSX.utils.sheet_to_json(worksheet);
+    }
+
+    if (parsedData.length === 0) {
+      throw new Error('The data is empty or could not be parsed.');
+    }
+
+    rawData = parsedData;
+    
+    // Save successfully loaded URL to localStorage
+    localStorage.setItem('dashboard_sheet_url', sheetUrl);
+    
+    // Update reset button visibility
+    const resetBtn = document.getElementById('reset-btn');
+    if (resetBtn) {
+      if (sheetUrl !== DEFAULT_SHEET_URL) {
+        resetBtn.classList.remove('hidden');
+      } else {
+        resetBtn.classList.add('hidden');
+      }
+    }
+    
+    initDashboard();
+  } catch (err) {
+    console.error('Error fetching Google Sheets data:', err);
+    alert(`Failed to sync: ${err.message}\nFalling back to default preloaded data.`);
+    
+    // Fallback to preloaded data if rawData is empty
+    if (rawData.length === 0 && typeof window.PRELOADED_DATA !== 'undefined') {
+      rawData = window.PRELOADED_DATA;
+      initDashboard();
+    }
+  } finally {
+    if (syncBtn) {
+      syncBtn.innerText = originalText;
+      syncBtn.disabled = false;
+    }
+  }
+}
+
 // Initialize Application
 window.addEventListener('DOMContentLoaded', () => {
   // Setup Chart.js global defaults for dark mode if library is loaded
@@ -104,13 +232,18 @@ window.addEventListener('DOMContentLoaded', () => {
     console.warn("Chart.js library is not loaded. Visual charts will be disabled.");
   }
 
-  // Load pre-loaded data if available
-  if (typeof window.PRELOADED_DATA !== 'undefined' && Array.isArray(window.PRELOADED_DATA)) {
-    rawData = window.PRELOADED_DATA;
-    initDashboard();
+  // Setup Event Listeners
+  setupEventListeners();
+
+  // Load URL from localStorage or default
+  const savedUrl = localStorage.getItem('dashboard_sheet_url') || DEFAULT_SHEET_URL;
+  const urlInput = document.getElementById('sheet-url-input');
+  if (urlInput) {
+    urlInput.value = savedUrl;
   }
 
-  setupEventListeners();
+  // Fetch the data from the Google Sheet
+  fetchGoogleSheetsData(savedUrl);
 });
 
 // Setup event handlers
@@ -122,13 +255,35 @@ function setupEventListeners() {
   // Reset Button
   const resetBtn = document.getElementById('reset-btn');
   resetBtn.addEventListener('click', () => {
-    if (typeof window.PRELOADED_DATA !== 'undefined') {
-      rawData = window.PRELOADED_DATA;
-      resetBtn.classList.add('hidden');
-      fileInput.value = '';
-      initDashboard();
+    localStorage.removeItem('dashboard_sheet_url');
+    const urlInput = document.getElementById('sheet-url-input');
+    if (urlInput) {
+      urlInput.value = DEFAULT_SHEET_URL;
     }
+    fileInput.value = '';
+    resetBtn.classList.add('hidden');
+    fetchGoogleSheetsData(DEFAULT_SHEET_URL);
   });
+
+  // Google Sheets Sync
+  const syncBtn = document.getElementById('sheet-sync-btn');
+  const urlInput = document.getElementById('sheet-url-input');
+  
+  if (syncBtn && urlInput) {
+    const triggerSync = () => {
+      const enteredUrl = urlInput.value.trim();
+      if (enteredUrl) {
+        fetchGoogleSheetsData(enteredUrl);
+      }
+    };
+    
+    syncBtn.addEventListener('click', triggerSync);
+    urlInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        triggerSync();
+      }
+    });
+  }
 
   // Filter Changes
   document.getElementById('filter-corp').addEventListener('change', (e) => {
@@ -533,18 +688,77 @@ function renderDeptChart(rows) {
   });
 }
 
-// Render 4-5 Pie charts representing ranges: 0-10, 10-20, 20-30, 30-40, 40-50
+// Helper to compute dynamic ranges based on employee mandays
+function getDynamicRangeConfigs(maxMandays) {
+  if (maxMandays <= 50) {
+    return [
+      { id: '0-10', label: '0-10 Mandays', min: 0, max: 10, color: 'emerald' },
+      { id: '10-20', label: '10-20 Mandays', min: 10.0001, max: 20, color: 'blue' },
+      { id: '20-30', label: '20-30 Mandays', min: 20.0001, max: 30, color: 'amber' },
+      { id: '30-40', label: '30-40 Mandays', min: 30.0001, max: 40, color: 'orange' },
+      { id: '40-50', label: '40-50 Mandays', min: 40.0001, max: 50, color: 'rose' }
+    ];
+  }
+  
+  // Scale intervals dynamically. Round interval up to nearest 10 for clean visual ranges.
+  const interval = Math.ceil(maxMandays / 5 / 10) * 10;
+  const configs = [];
+  const colors = ['emerald', 'blue', 'amber', 'orange', 'rose'];
+  
+  for (let i = 0; i < 5; i++) {
+    const min = i * interval;
+    const max = (i + 1) * interval;
+    configs.push({
+      id: `${min}-${max}`,
+      label: `${min}-${max} Mandays`,
+      min: i === 0 ? min : min + 0.0001,
+      max: max,
+      color: colors[i]
+    });
+  }
+  return configs;
+}
+
+// Render dynamic range pie charts representing intervals
 function renderRangePieCharts() {
-  RANGE_CONFIGS.forEach(range => {
-    // 1. Find employees whose mandaysSum fits in this range
+  const container = document.getElementById('ranges-pies-container');
+  if (!container) return;
+
+  // 1. Find max mandays to determine scaling boundaries
+  const maxMandays = employeesList.reduce((max, emp) => Math.max(max, emp.mandaysSum), 0);
+  
+  // 2. Generate range configs
+  const rangeConfigs = getDynamicRangeConfigs(maxMandays);
+
+  // 3. Clear container and recreate cards dynamically
+  container.innerHTML = '';
+  
+  rangeConfigs.forEach(range => {
+    const cardEl = document.createElement('div');
+    cardEl.className = 'glass-card pie-card';
+    cardEl.id = `card-range-${range.id}`;
+    
+    // Choose bullet icon color
+    const bullet = range.color === 'emerald' ? '🟢' : range.color === 'blue' ? '🔵' : range.color === 'amber' ? '🟡' : range.color === 'orange' ? '🟠' : '🔴';
+    
+    cardEl.innerHTML = `
+      <div class="pie-card-header">
+        <span class="pie-card-title">${bullet} ${range.label}</span>
+        <span class="pie-card-badge" id="badge-range-${range.id}">0 Employees</span>
+      </div>
+      <div class="chart-container-donut">
+        <canvas id="chart-range-${range.id}"></canvas>
+      </div>
+    `;
+    container.appendChild(cardEl);
+  });
+
+  // 4. Render chart canvases
+  rangeConfigs.forEach(range => {
+    // Find employees whose mandaysSum fits in this range
     const employeesInRange = employeesList.filter(emp => {
       const s = emp.mandaysSum;
-      if (range.id === '0-10') return s >= 0 && s <= 10;
-      if (range.id === '10-20') return s > 10 && s <= 20;
-      if (range.id === '20-30') return s > 20 && s <= 30;
-      if (range.id === '30-40') return s > 30 && s <= 40;
-      if (range.id === '40-50') return s > 40 && s <= 50;
-      return false;
+      return s >= range.min && s <= range.max;
     });
 
     // Update Badge text
@@ -563,23 +777,12 @@ function renderRangePieCharts() {
         delete rangeChartInstances[range.id];
       }
       
-      // Insert empty state if not already there
-      let emptyState = cardEl.querySelector('.pie-empty-state');
-      if (!emptyState) {
-        canvas.style.display = 'none';
-        emptyState = document.createElement('div');
-        emptyState.className = 'pie-empty-state';
-        emptyState.innerHTML = `<i>🫙</i><p>No employees in this range</p>`;
-        cardEl.appendChild(emptyState);
-      }
+      canvas.style.display = 'none';
+      const emptyState = document.createElement('div');
+      emptyState.className = 'pie-empty-state';
+      emptyState.innerHTML = `<i>🫙</i><p>No employees in this range</p>`;
+      cardEl.appendChild(emptyState);
       return;
-    } else {
-      // Remove empty state if present
-      const emptyState = cardEl.querySelector('.pie-empty-state');
-      if (emptyState) {
-        emptyState.remove();
-      }
-      canvas.style.display = 'block';
     }
 
     // Group employees in this range by Plant or Department depending on current toggle
@@ -639,7 +842,6 @@ function renderRangePieCharts() {
             }
           }
         },
-        // Enable click event on slice to show detail list
         onClick: (evt, activeElements) => {
           if (activeElements.length > 0) {
             const index = activeElements[0].index;

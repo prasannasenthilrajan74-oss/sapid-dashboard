@@ -144,6 +144,7 @@ body {
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .file-dropzone {
@@ -999,4 +1000,62 @@ tr:hover td {
   font-weight: 700;
   color: var(--accent-indigo);
   text-shadow: 0 0 8px rgba(99, 102, 241, 0.3);
+}
+
+/* Google Sheets Sync input */
+.sheet-sync-container {
+  display: flex;
+  align-items: center;
+  background: rgba(30, 41, 59, 0.45);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: 0.35rem 0.5rem 0.35rem 1rem;
+  backdrop-filter: blur(16px);
+  gap: 0.5rem;
+  min-width: 280px;
+  max-width: 380px;
+  transition: var(--transition-normal);
+}
+
+.sheet-sync-container:focus-within {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 10px rgba(14, 165, 233, 0.2);
+}
+
+.sheet-sync-input {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  outline: none;
+  flex: 1;
+  width: 100%;
+}
+
+.sheet-sync-btn {
+  background: var(--accent-blue);
+  color: #fff;
+  border: none;
+  padding: 0.4rem 1rem;
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.sheet-sync-btn:hover:not(:disabled) {
+  background: #0284c7;
+  box-shadow: 0 0 8px rgba(14, 165, 233, 0.3);
+}
+
+.sheet-sync-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.sheet-sync-container span {
+  font-size: 0.9rem;
 }
