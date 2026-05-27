@@ -4,18 +4,13 @@ let employeesList = []; // Aggregated employees list
 let currentFilters = {
   corp: 'ALL',
   dept: 'ALL',
-  attended: 'ALL',
-  search: ''
+  attended: 'ALL'
 };
 
 // Toggle for range pie charts slice grouping: 'corp' or 'dept'
 let pieSliceGrouping = 'corp';
 
-// Table State
-let tableSortColumn = 'dept'; // Default sort by department
-let tableSortDirection = 'asc';
-let tableCurrentPage = 1;
-let tablePageSize = 10;
+
 let selectedLeadershipCourse = '';
 
 // Chart Instances
@@ -215,6 +210,123 @@ async function fetchGoogleSheetsData(sheetUrl) {
   }
 }
 
+// --- AUTHENTICATION & LOGIN FLOW ---
+
+// Check if user is logged in (session storage or remembered in local storage)
+function checkAuthStatus() {
+  return sessionStorage.getItem('skilltrack_logged_in') === 'true' || 
+         localStorage.getItem('skilltrack_remembered_user') === 'rane';
+}
+
+// Setup login interface event listeners
+function setupLoginListeners() {
+  const loginForm = document.getElementById('login-form');
+  const togglePasswordBtn = document.getElementById('toggle-password-btn');
+  const passwordInput = document.getElementById('password');
+  const usernameInput = document.getElementById('username');
+  const errorMsg = document.getElementById('login-error-msg');
+  const submitBtn = document.getElementById('login-submit-btn');
+
+  if (togglePasswordBtn && passwordInput) {
+    togglePasswordBtn.addEventListener('click', () => {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      
+      const svg = togglePasswordBtn.querySelector('.eye-icon');
+      if (svg) {
+        if (type === 'text') {
+          svg.style.opacity = '0.5';
+        } else {
+          svg.style.opacity = '1';
+        }
+      }
+    });
+  }
+
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const usernameVal = usernameInput.value.trim();
+      const passwordVal = passwordInput.value;
+      
+      // Clear error states
+      errorMsg.classList.add('hidden');
+      errorMsg.innerText = '';
+      
+      const originalBtnText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>Verifying...</span>';
+      
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: usernameVal,
+            password: passwordVal
+          })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+          // Store session/remember state
+          const rememberMe = document.getElementById('remember-me').checked;
+          if (rememberMe) {
+            localStorage.setItem('skilltrack_remembered_user', usernameVal);
+          } else {
+            localStorage.removeItem('skilltrack_remembered_user');
+          }
+          sessionStorage.setItem('skilltrack_logged_in', 'true');
+          
+          // Animate and hide login screen
+          const loginContainer = document.getElementById('login-container');
+          loginContainer.classList.add('fade-out');
+          
+          // Show dashboard
+          const dashboardWrapper = document.querySelector('.dashboard-wrapper');
+          dashboardWrapper.classList.remove('hidden');
+          
+          // Fetch data from Google Sheet
+          const savedUrl = localStorage.getItem('dashboard_sheet_url') || DEFAULT_SHEET_URL;
+          fetchGoogleSheetsData(savedUrl);
+          
+          // Remove from layout after transition completes
+          setTimeout(() => {
+            loginContainer.classList.add('hidden');
+          }, 400);
+        } else {
+          // Validation error
+          errorMsg.classList.remove('hidden');
+          errorMsg.innerText = data.message || 'Invalid username or password.';
+          
+          // Clear password input and focus
+          passwordInput.value = '';
+          passwordInput.focus();
+          
+          // Shake the card to indicate validation failure
+          const card = document.querySelector('.login-card');
+          if (card) {
+            card.style.animation = 'none';
+            void card.offsetWidth; // Trigger reflow to restart animation
+            card.style.animation = 'shake 0.4s ease-in-out';
+          }
+        }
+      } catch (err) {
+        console.error('Authentication error:', err);
+        errorMsg.classList.remove('hidden');
+        errorMsg.innerText = 'Unable to connect to the authentication server. Please try again.';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+      }
+    });
+  }
+}
+
 // Initialize Application
 window.addEventListener('DOMContentLoaded', () => {
   // Setup Chart.js global defaults for dark mode if library is loaded
@@ -234,6 +346,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Setup Event Listeners
   setupEventListeners();
+  setupLoginListeners();
 
   // Load URL from localStorage or default
   const savedUrl = localStorage.getItem('dashboard_sheet_url') || DEFAULT_SHEET_URL;
@@ -242,8 +355,21 @@ window.addEventListener('DOMContentLoaded', () => {
     urlInput.value = savedUrl;
   }
 
-  // Fetch the data from the Google Sheet
-  fetchGoogleSheetsData(savedUrl);
+  // Handle conditional initial data fetch depending on authorization status
+  if (checkAuthStatus()) {
+    // Hide login container overlay instantly
+    const loginContainer = document.getElementById('login-container');
+    if (loginContainer) {
+      loginContainer.classList.add('hidden');
+    }
+    // Show main dashboard container
+    const dashboardWrapper = document.querySelector('.dashboard-wrapper');
+    if (dashboardWrapper) {
+      dashboardWrapper.classList.remove('hidden');
+    }
+    // Fetch data immediately
+    fetchGoogleSheetsData(savedUrl);
+  }
 });
 
 // Setup event handlers
@@ -298,10 +424,7 @@ function setupEventListeners() {
     currentFilters.attended = e.target.value;
     updateDashboard();
   });
-  document.getElementById('search-employee').addEventListener('input', (e) => {
-    currentFilters.search = e.target.value.toLowerCase().trim();
-    updateDashboard();
-  });
+
 
   // Pie chart slice toggle (Group by Corp vs Group by Dept)
   const btnGroupCorp = document.getElementById('toggle-slice-corp');
@@ -325,53 +448,7 @@ function setupEventListeners() {
     }
   });
 
-  // Table Page Size
-  document.getElementById('table-page-size').addEventListener('change', (e) => {
-    tablePageSize = parseInt(e.target.value);
-    tableCurrentPage = 1;
-    renderEmployeeTable();
-  });
 
-  // Table Sorting Headers
-  const headers = ['th-genid', 'th-name', 'th-corp', 'th-dept', 'th-courses', 'th-mandays'];
-  headers.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener('click', () => {
-        const col = el.getAttribute('data-sort');
-        if (tableSortColumn === col) {
-          tableSortDirection = tableSortDirection === 'asc' ? 'desc' : 'asc';
-        } else {
-          tableSortColumn = col;
-          tableSortDirection = 'asc';
-        }
-        
-        // Update header classes
-        headers.forEach(hId => {
-          const hEl = document.getElementById(hId);
-          hEl.classList.remove('sorted-asc', 'sorted-desc');
-        });
-        el.classList.add(tableSortDirection === 'asc' ? 'sorted-asc' : 'sorted-desc');
-        
-        renderEmployeeTable();
-      });
-    }
-  });
-
-  // Pagination buttons
-  document.getElementById('btn-prev-page').addEventListener('click', () => {
-    if (tableCurrentPage > 1) {
-      tableCurrentPage--;
-      renderEmployeeTable();
-    }
-  });
-  document.getElementById('btn-next-page').addEventListener('click', () => {
-    const totalPages = Math.ceil(filteredEmployees().length / tablePageSize);
-    if (tableCurrentPage < totalPages) {
-      tableCurrentPage++;
-      renderEmployeeTable();
-    }
-  });
 
   // Modal Close
   document.getElementById('modal-close-btn').addEventListener('click', closeModal);
@@ -457,13 +534,10 @@ function initDashboard() {
   catSelect.value = 'ALL';
 
   // Reset Filters to ALL
-  currentFilters = { corp: 'ALL', dept: 'ALL', attended: 'ALL', search: '' };
+  currentFilters = { corp: 'ALL', dept: 'ALL', attended: 'ALL' };
   document.getElementById('filter-corp').value = 'ALL';
   document.getElementById('filter-dept').value = 'ALL';
   document.getElementById('filter-attended').value = 'ALL';
-  document.getElementById('search-employee').value = '';
-
-  tableCurrentPage = 1;
 
   updateDashboard();
 }
@@ -525,9 +599,7 @@ function updateDashboard() {
   // Render TQM and Category Progress on the right column
   renderRightColumnAnalytics(filteredRows);
 
-  // 6. Render Employee Ledger Table
-  tableCurrentPage = 1;
-  renderEmployeeTable();
+
 }
 
 // Render KPI Summary Cards
@@ -927,99 +999,7 @@ function closeModal() {
   document.getElementById('drilldown-modal').classList.remove('active');
 }
 
-// Get final filtered employees list for the table ledger
-function filteredEmployees() {
-  let list = [...employeesList];
 
-  // Search Filter
-  if (currentFilters.search) {
-    const term = currentFilters.search;
-    list = list.filter(emp => {
-      return emp.name.toLowerCase().includes(term) || emp.id.toLowerCase().includes(term);
-    });
-  }
-
-  // Sort List
-  list.sort((a, b) => {
-    let valA = a[tableSortColumn];
-    let valB = b[tableSortColumn];
-
-    if (tableSortColumn === 'courses') {
-      valA = a.coursesTotal;
-      valB = b.coursesTotal;
-    }
-
-    if (typeof valA === 'string') {
-      return tableSortDirection === 'asc' 
-        ? valA.localeCompare(valB) 
-        : valB.localeCompare(valA);
-    } else {
-      // Numbers
-      return tableSortDirection === 'asc' 
-        ? valA - valB 
-        : valB - valA;
-    }
-  });
-
-  return list;
-}
-
-// Render the main table
-function renderEmployeeTable() {
-  const list = filteredEmployees();
-  const totalItems = list.length;
-  const totalPages = Math.ceil(totalItems / tablePageSize) || 1;
-
-  // Bound check page index
-  if (tableCurrentPage > totalPages) {
-    tableCurrentPage = totalPages;
-  }
-  if (tableCurrentPage < 1) {
-    tableCurrentPage = 1;
-  }
-
-  const startIdx = (tableCurrentPage - 1) * tablePageSize;
-  const endIdx = Math.min(startIdx + tablePageSize, totalItems);
-  const pageItems = list.slice(startIdx, endIdx);
-
-  const tbody = document.getElementById('employee-table-body');
-  tbody.innerHTML = '';
-
-  if (pageItems.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">
-          No matching employees found
-        </td>
-      </tr>
-    `;
-    document.getElementById('table-info').innerText = 'Showing 0 to 0 of 0 employees';
-    document.getElementById('btn-prev-page').disabled = true;
-    document.getElementById('btn-next-page').disabled = true;
-    return;
-  }
-
-  pageItems.forEach(emp => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td style="font-weight: 600;">${emp.id}</td>
-      <td>${emp.name}</td>
-      <td><span class="badge-plant">${emp.corp}</span></td>
-      <td><span class="badge-dept">${emp.dept}</span></td>
-      <td style="text-align: center;">
-        <span style="font-weight: 500;">${emp.coursesAttended}</span>
-        <span style="color: var(--text-muted);">/ ${emp.coursesTotal}</span>
-      </td>
-      <td style="text-align: right; font-weight: 700; color: #38bdf8;">${emp.mandaysSum.toFixed(1)}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-
-  // Update Pagination Controls
-  document.getElementById('table-info').innerText = `Showing ${startIdx + 1} to ${endIdx} of ${totalItems} employees`;
-  document.getElementById('btn-prev-page').disabled = tableCurrentPage === 1;
-  document.getElementById('btn-next-page').disabled = tableCurrentPage === totalPages;
-}
 
 // Render Leadership Track Segment: displays courses as cards/buttons
 function renderLeadershipChart() {

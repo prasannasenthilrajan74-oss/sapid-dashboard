@@ -89,13 +89,4 @@ If your organization restricts external sharing, you can fetch data securely by 
    - **Who has access**: Anyone (this lets the client-side JavaScript request data without a login prompt)
 6. Click **Deploy**.
 7. Copy the generated **Web App URL** (the link ending in `/exec`).
-8. Paste that URL directly into the dashboard's URL Sync input box and click **Sync**.
-
----
-
-## Local Repository Commands
-To stage and commit these changes locally:
-```bash
-git add app.js index.html styles.css README.md .gitignore
-git commit -m "Configure dynamic live Google Sheets syncing with Apps Script support"
-```
+8. Paste that URL directly into the dashboard's URL Sync input box and click 
