@@ -80,7 +80,7 @@ async function fetchSpreadsheetData(sheetUrl) {
   let csvUrl = sheetUrl;
   if (!isAppsScript) {
     csvUrl = getGoogleSheetsCsvUrl(sheetUrl);
-    if (!csvUrl) cat
+    if (!csvUrl) {
       alert('Invalid Google Sheets URL format.');
       return;
     }
