@@ -8,12 +8,18 @@
   <!-- SheetJS for reading Google Sheet data client-side -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
-    // Authentication Check
-    const loggedIn = sessionStorage.getItem('skilltrack_logged_in') === 'true' || 
-                     localStorage.getItem('skilltrack_remembered_user') === 'rane';
-    if (!loggedIn) {
-      window.location.href = 'index.html';
-    }
+    // Invalidate session and redirect if user refreshes the page
+    (async function() {
+      try {
+        const navs = performance.getEntriesByType("navigation");
+        if (navs.length > 0 && navs[0].type === "reload") {
+          await fetch('/api/logout', { method: 'POST' });
+          window.location.href = '/login';
+        }
+      } catch (e) {
+        console.error('Error handling reload:', e);
+      }
+    })();
   </script>
 </head>
 <body>
@@ -38,9 +44,14 @@
     </header>
 
     <!-- Top Navigation Menu -->
-    <nav class="dashboard-nav">
-      <a href="index.html" class="nav-item">📊 Dashboard</a>
-      <a href="ledger.html" class="nav-item active">📋 Employee Ledger</a>
+    <nav class="dashboard-nav" style="justify-content: space-between; align-items: center; display: flex; width: 100%;">
+      <div style="display: flex; gap: 1rem;">
+        <a href="index.html" class="nav-item">📊 Dashboard</a>
+        <a href="ledger.html" class="nav-item active">📋 Employee Ledger</a>
+      </div>
+      <button id="logout-btn" class="nav-item" style="background: transparent; border: none; cursor: pointer; color: var(--accent-rose); display: inline-flex; align-items: center;">
+        🚪 Sign Out
+      </button>
     </nav>
 
     <!-- Ledger Filter & Search Panel -->

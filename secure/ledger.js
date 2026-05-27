@@ -74,25 +74,23 @@ function getGoogleSheetsCsvUrl(urlStr) {
   return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}`;
 }
 
-// Fetch spreadsheet data
+// Fetch spreadsheet data via secure backend proxy
 async function fetchSpreadsheetData(sheetUrl) {
-  const isAppsScript = sheetUrl.includes('script.google.com/macros/s/');
-  let csvUrl = sheetUrl;
-  if (!isAppsScript) {
-    csvUrl = getGoogleSheetsCsvUrl(sheetUrl);
-    if (!csvUrl) {
-      alert('Invalid Google Sheets URL format.');
-      return;
-    }
-  }
-
   try {
-    const response = await fetch(csvUrl);
+    let apiUrl = '/api/data';
+    if (sheetUrl && sheetUrl !== DEFAULT_SHEET_URL) {
+      apiUrl += `?url=${encodeURIComponent(sheetUrl)}`;
+    }
+
+    const response = await fetch(apiUrl);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.message || `HTTP error! status: ${response.status}`);
     }
 
     let parsedData = [];
+    const isAppsScript = sheetUrl.includes('script.google.com/macros/s/');
+
     if (isAppsScript) {
       const jsonData = await response.json();
       if (Array.isArray(jsonData) && jsonData.length > 0 && Array.isArray(jsonData[0])) {
@@ -485,6 +483,23 @@ function setupLedgerListeners() {
 // DOM content loaded
 window.addEventListener('DOMContentLoaded', () => {
   setupLedgerListeners();
+
+  // Setup Sign Out listener
+  const logoutBtn = document.getElementById('logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        const response = await fetch('/api/logout', { method: 'POST' });
+        if (response.ok) {
+          window.location.href = '/login';
+        }
+      } catch (err) {
+        console.error('Logout error:', err);
+        window.location.href = '/login';
+      }
+    });
+  }
+
   const activeUrl = localStorage.getItem('dashboard_sheet_url') || DEFAULT_SHEET_URL;
   fetchSpreadsheetData(activeUrl);
 });

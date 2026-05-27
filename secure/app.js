@@ -112,19 +112,8 @@ function getGoogleSheetsCsvUrl(urlStr) {
   return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}`;
 }
 
-// Function to fetch data from Google Sheets or Apps Script Web App
+// Function to fetch data from Google Sheets or Apps Script Web App via secure backend proxy
 async function fetchGoogleSheetsData(sheetUrl) {
-  const isAppsScript = sheetUrl.includes('script.google.com/macros/s/');
-  
-  let csvUrl = sheetUrl;
-  if (!isAppsScript) {
-    csvUrl = getGoogleSheetsCsvUrl(sheetUrl);
-    if (!csvUrl) {
-      alert('Invalid Google Sheets URL format. Please paste a valid link.');
-      return;
-    }
-  }
-
   // Show a visual loading state in the sync button
   const syncBtn = document.getElementById('sheet-sync-btn');
   const originalText = syncBtn ? syncBtn.innerText : 'Sync';
@@ -134,12 +123,20 @@ async function fetchGoogleSheetsData(sheetUrl) {
   }
 
   try {
-    const response = await fetch(csvUrl);
+    // Route request through secure server-side endpoint
+    let apiUrl = '/api/data';
+    if (sheetUrl && sheetUrl !== DEFAULT_SHEET_URL) {
+      apiUrl += `?url=${encodeURIComponent(sheetUrl)}`;
+    }
+
+    const response = await fetch(apiUrl);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.message || `HTTP error! status: ${response.status}`);
     }
 
     let parsedData = [];
+    const isAppsScript = sheetUrl.includes('script.google.com/macros/s/');
 
     if (isAppsScript) {
       // It's a JSON response from Apps Script
@@ -164,7 +161,7 @@ async function fetchGoogleSheetsData(sheetUrl) {
         throw new Error('Unexpected JSON format from Google Apps Script.');
       }
     } else {
-      // It's a CSV response from Google Sheets Visualization API
+      // It's a CSV response from Google Sheets
       const csvText = await response.text();
       // Parse CSV using SheetJS
       const workbook = XLSX.read(csvText, { type: 'string' });
@@ -210,122 +207,7 @@ async function fetchGoogleSheetsData(sheetUrl) {
   }
 }
 
-// --- AUTHENTICATION & LOGIN FLOW ---
-
-// Check if user is logged in (session storage or remembered in local storage)
-function checkAuthStatus() {
-  return sessionStorage.getItem('skilltrack_logged_in') === 'true' || 
-         localStorage.getItem('skilltrack_remembered_user') === 'rane';
-}
-
-// Setup login interface event listeners
-function setupLoginListeners() {
-  const loginForm = document.getElementById('login-form');
-  const togglePasswordBtn = document.getElementById('toggle-password-btn');
-  const passwordInput = document.getElementById('password');
-  const usernameInput = document.getElementById('username');
-  const errorMsg = document.getElementById('login-error-msg');
-  const submitBtn = document.getElementById('login-submit-btn');
-
-  if (togglePasswordBtn && passwordInput) {
-    togglePasswordBtn.addEventListener('click', () => {
-      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-      passwordInput.setAttribute('type', type);
-      
-      const svg = togglePasswordBtn.querySelector('.eye-icon');
-      if (svg) {
-        if (type === 'text') {
-          svg.style.opacity = '0.5';
-        } else {
-          svg.style.opacity = '1';
-        }
-      }
-    });
-  }
-
-  if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const usernameVal = usernameInput.value.trim();
-      const passwordVal = passwordInput.value;
-      
-      // Clear error states
-      errorMsg.classList.add('hidden');
-      errorMsg.innerText = '';
-      
-      const originalBtnText = submitBtn.innerHTML;
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span>Verifying...</span>';
-      
-      try {
-        const response = await fetch('/api/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            username: usernameVal,
-            password: passwordVal
-          })
-        });
-
-        const data = await response.json();
-        
-        if (response.ok && data.success) {
-          // Store session/remember state
-          const rememberMe = document.getElementById('remember-me').checked;
-          if (rememberMe) {
-            localStorage.setItem('skilltrack_remembered_user', usernameVal);
-          } else {
-            localStorage.removeItem('skilltrack_remembered_user');
-          }
-          sessionStorage.setItem('skilltrack_logged_in', 'true');
-          
-          // Animate and hide login screen
-          const loginContainer = document.getElementById('login-container');
-          loginContainer.classList.add('fade-out');
-          
-          // Show dashboard
-          const dashboardWrapper = document.querySelector('.dashboard-wrapper');
-          dashboardWrapper.classList.remove('hidden');
-          
-          // Fetch data from Google Sheet
-          const savedUrl = localStorage.getItem('dashboard_sheet_url') || DEFAULT_SHEET_URL;
-          fetchGoogleSheetsData(savedUrl);
-          
-          // Remove from layout after transition completes
-          setTimeout(() => {
-            loginContainer.classList.add('hidden');
-          }, 400);
-        } else {
-          // Validation error
-          errorMsg.classList.remove('hidden');
-          errorMsg.innerText = data.message || 'Invalid username or password.';
-          
-          // Clear password input and focus
-          passwordInput.value = '';
-          passwordInput.focus();
-          
-          // Shake the card to indicate validation failure
-          const card = document.querySelector('.login-card');
-          if (card) {
-            card.style.animation = 'none';
-            void card.offsetWidth; // Trigger reflow to restart animation
-            card.style.animation = 'shake 0.4s ease-in-out';
-          }
-        }
-      } catch (err) {
-        console.error('Authentication error:', err);
-        errorMsg.classList.remove('hidden');
-        errorMsg.innerText = 'Unable to connect to the authentication server. Please try again.';
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalBtnText;
-      }
-    });
-  }
-}
+// --- AUTHENTICATION & LOGOUT FLOW ---
 
 // Initialize Application
 window.addEventListener('DOMContentLoaded', () => {
@@ -346,7 +228,22 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Setup Event Listeners
   setupEventListeners();
-  setupLoginListeners();
+
+  // Setup Sign Out listener
+  const logoutBtn = document.getElementById('logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        const response = await fetch('/api/logout', { method: 'POST' });
+        if (response.ok) {
+          window.location.href = '/login';
+        }
+      } catch (err) {
+        console.error('Logout error:', err);
+        window.location.href = '/login';
+      }
+    });
+  }
 
   // Load URL from localStorage or default
   const savedUrl = localStorage.getItem('dashboard_sheet_url') || DEFAULT_SHEET_URL;
@@ -355,21 +252,8 @@ window.addEventListener('DOMContentLoaded', () => {
     urlInput.value = savedUrl;
   }
 
-  // Handle conditional initial data fetch depending on authorization status
-  if (checkAuthStatus()) {
-    // Hide login container overlay instantly
-    const loginContainer = document.getElementById('login-container');
-    if (loginContainer) {
-      loginContainer.classList.add('hidden');
-    }
-    // Show main dashboard container
-    const dashboardWrapper = document.querySelector('.dashboard-wrapper');
-    if (dashboardWrapper) {
-      dashboardWrapper.classList.remove('hidden');
-    }
-    // Fetch data immediately
-    fetchGoogleSheetsData(savedUrl);
-  }
+  // Fetch data immediately (authentication verified by server)
+  fetchGoogleSheetsData(savedUrl);
 });
 
 // Setup event handlers
