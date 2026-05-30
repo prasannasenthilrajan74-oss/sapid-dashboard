@@ -13,7 +13,7 @@ An interactive, premium, dark-mode web application designed to visualize, filter
 - **Safe Fallbacks**: If the fetch fails (due to offline states or network boundaries), the uploader remains ready for local files.
 
 ### 2. Google Apps Script Web App Support (For Restricted Domains)
-- Built-in support for private/restricted organization domains (such as `@vitstudent.ac.in` or enterprise Google Workspace).
+- Built-in support for private/restricted organization domains (such as enterprise Google Workspace accounts).
 - Detects Google Apps Script Web App links and automatically converts 2D array matrix responses (`[[headers], [row1], [row2]]`) into the correct object ledger format dynamically.
 
 ### 3. Dynamic Range Auto-Scaling (Pie Charts)
@@ -68,7 +68,7 @@ Open **[http://localhost:8080](http://localhost:8080)** in your default browser.
 3. Copy the URL from the browser address bar.
 4. Paste it into the dashboard URL box and click **Sync**.
 
-### Option B: Restricted Domain Sheets (e.g. VIT Student / Enterprise)
+### Option B: Restricted Domain Sheets (e.g. Enterprise Organization)
 If your organization restricts external sharing, you can fetch data securely by deploying a micro Google Apps Script Web App:
 
 1. In your Google Sheet, open **Extensions** -> **Apps Script**.

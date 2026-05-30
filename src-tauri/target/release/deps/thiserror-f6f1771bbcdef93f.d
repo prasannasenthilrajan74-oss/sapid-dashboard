@@ -1,0 +1,14 @@
+C:\Users\prasa\sheets dashboard\src-tauri\target\release\deps\thiserror-f6f1771bbcdef93f.d: C:\Users\prasa\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\lib.rs C:\Users\prasa\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\aserror.rs C:\Users\prasa\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\display.rs C:\Users\prasa\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\var.rs C:\Users\prasa\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\private.rs C:\Users\prasa\sheets\ dashboard\src-tauri\target\release\build\thiserror-05f09dff07e5258e\out/private.rs
+
+C:\Users\prasa\sheets dashboard\src-tauri\target\release\deps\libthiserror-f6f1771bbcdef93f.rlib: C:\Users\prasa\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\lib.rs C:\Users\prasa\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\aserror.rs C:\Users\prasa\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\display.rs C:\Users\prasa\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\var.rs C:\Users\prasa\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\private.rs C:\Users\prasa\sheets\ dashboard\src-tauri\target\release\build\thiserror-05f09dff07e5258e\out/private.rs
+
+C:\Users\prasa\sheets dashboard\src-tauri\target\release\deps\libthiserror-f6f1771bbcdef93f.rmeta: C:\Users\prasa\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\lib.rs C:\Users\prasa\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\aserror.rs C:\Users\prasa\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\display.rs C:\Users\prasa\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\var.rs C:\Users\prasa\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\private.rs C:\Users\prasa\sheets\ dashboard\src-tauri\target\release\build\thiserror-05f09dff07e5258e\out/private.rs
+
+C:\Users\prasa\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\lib.rs:
+C:\Users\prasa\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\aserror.rs:
+C:\Users\prasa\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\display.rs:
+C:\Users\prasa\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\var.rs:
+C:\Users\prasa\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\private.rs:
+C:\Users\prasa\sheets\ dashboard\src-tauri\target\release\build\thiserror-05f09dff07e5258e\out/private.rs:
+
+# env-dep:OUT_DIR=C:\\Users\\prasa\\sheets dashboard\\src-tauri\\target\\release\\build\\thiserror-05f09dff07e5258e\\out

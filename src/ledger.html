@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Ledger - SkillTrack Analyzer</title>
+  <link rel="stylesheet" href="styles.css?v=3">
+  <!-- SheetJS for reading Google Sheet data client-side -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="bg-glow-top"></div>
+  <div class="bg-glow-right"></div>
+
+  <div class="dashboard-wrapper">
+    <!-- Header Section -->
+    <header class="dashboard-header">
+      <div class="header-title-section">
+        <h1>SkillTrack Analyzer</h1>
+        <p>Employee Training Mandays Ledger</p>
+      </div>
+      
+      <!-- Display sync status / simple link indicator -->
+      <div class="file-upload-container">
+        <span style="font-size: 0.85rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem; background: rgba(30, 41, 59, 0.4); padding: 0.5rem 1rem; border-radius: var(--border-radius-md); border: 1px solid var(--border-color);">
+          <span>🔗</span> Synced with Active Sheet Link
+        </span>
+      </div>
+    </header>
+
+    <!-- Top Navigation Menu -->
+    <nav class="dashboard-nav" style="justify-content: space-between; align-items: center; display: flex; width: 100%;">
+      <div style="display: flex; gap: 1rem;">
+        <a href="index.html" class="nav-item">📊 Dashboard</a>
+        <a href="ledger.html" class="nav-item active">📋 Employee Ledger</a>
+      </div>
+    </nav>
+
+    <!-- Ledger Filter & Search Panel -->
+    <section class="glass-card filter-panel glow-animation">
+      <!-- Search Input + Search Button -->
+      <div class="filter-group">
+        <label for="search-employee">Search Employee</label>
+        <div class="search-button-group">
+          <input type="text" id="search-employee" class="search-input-field" placeholder="Name or GenID...">
+          <button id="search-btn" class="search-action-btn">🔍 Search</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-corp">Corp/Plant</label>
+        <div class="select-wrapper">
+          <select id="filter-corp">
+            <option value="ALL">All Plants</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-dept">Department</label>
+        <div class="select-wrapper">
+          <select id="filter-dept">
+            <option value="ALL">All Departments</option>
+          </select>
+        </div>
+      </div>
+
+      <button id="reset-filter-btn" class="reset-filter-btn" style="margin-top: 1.15rem;">
+        🔄 Clear
+      </button>
+
+      <div class="filter-group" style="margin-left: auto;">
+        <label for="table-page-size">Rows per page</label>
+        <div class="select-wrapper">
+          <select id="table-page-size" style="min-width: 90px;">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Employee Mandays Ledger Section -->
+    <section class="glass-card table-card" style="margin-top: 0;">
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th id="th-genid" data-sort="id" class="sorted-asc">Employee ID</th>
+              <th id="th-name" data-sort="name">Employee Name</th>
+              <th id="th-corp" data-sort="corp">Corp/Plant</th>
+              <th id="th-dept" data-sort="dept">Department</th>
+              <th id="th-courses" data-sort="courses" style="text-align: center;">Trainings Attended</th>
+              <th id="th-mandays" data-sort="mandays" style="text-align: right;">Total Mandays</th>
+            </tr>
+          </thead>
+          <tbody id="employee-table-body">
+            <!-- Dynamically populated rows -->
+            <tr>
+              <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 3rem 0;">
+                Loading employee ledger...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination footer -->
+      <div class="pagination">
+        <div id="table-info">Showing 0 to 0 of 0 employees</div>
+        <div class="pagination-buttons">
+          <button id="btn-prev-page" class="pagination-btn" disabled>Previous</button>
+          <button id="btn-next-page" class="pagination-btn" disabled>Next</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Interactive Employee Drilldown Modal -->
+  <div class="modal-overlay" id="drilldown-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title-area">
+          <h3 id="modal-title">Employee Details</h3>
+          <p id="modal-subtitle">Sub-breakdown of filtered employees</p>
+        </div>
+        <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-content-area">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr style="background-color: #111827;">
+                <th style="padding: 0.75rem 1rem;">Sno</th>
+                <th style="padding: 0.75rem 1rem;">Employee ID</th>
+                <th style="padding: 0.75rem 1rem;">Name</th>
+                <th style="padding: 0.75rem 1rem;">Designation</th>
+                <th style="padding: 0.75rem 1rem;">Department</th>
+                <th style="padding: 0.75rem 1rem;">Corp/Plant</th>
+                <th style="padding: 0.75rem 1rem;">Category</th>
+                <th style="padding: 0.75rem 1rem;">Course Name</th>
+                <th style="padding: 0.75rem 1rem;">From Date</th>
+                <th style="padding: 0.75rem 1rem;">To Date</th>
+                <th style="padding: 0.75rem 1rem;">Organiser</th>
+                <th style="padding: 0.75rem 1rem; text-align: right;">Mandays</th>
+                <th style="padding: 0.75rem 1rem; text-align: center;">Attended</th>
+              </tr>
+            </thead>
+            <tbody id="modal-table-body">
+              <!-- Populated when employee row clicked -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load ledger logic -->
+  <script src="ledger.js"></script>
+</body>
+</html>

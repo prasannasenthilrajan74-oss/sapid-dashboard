@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillTrack Analyzer</title>
+  <meta name="description" content="SkillTrack Analyzer — Interactive Training & Employee Development Dashboard">
+  <link rel="stylesheet" href="styles.css?v=3">
+  <!-- Chart.js for beautiful charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SheetJS for reading uploaded Excel files client-side -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="bg-glow-top"></div>
+  <div class="bg-glow-right"></div>
+
+  <div class="dashboard-wrapper">
+    <!-- Header Section -->
+    <header class="dashboard-header">
+      <div class="header-title-section">
+        <h1>SkillTrack Analyzer</h1>
+        <p>Interactive Training &amp; Employee Development Dashboard</p>
+      </div>
+      
+      <div class="file-upload-container">
+        <div class="sheet-sync-container">
+          <span>🔗</span>
+          <input type="text" id="sheet-url-input" class="sheet-sync-input" placeholder="Google Sheets Link...">
+          <button id="sheet-sync-btn" class="sheet-sync-btn">Sync</button>
+        </div>
+        <button id="reset-btn" class="reset-btn hidden">
+          <span>🔄</span> Reset to Default Data
+        </button>
+        <div class="file-dropzone">
+          <span>📂</span> Upload Excel Sheet
+          <input type="file" id="excel-file" accept=".xlsx, .xls">
+        </div>
+      </div>
+    </header>
+
+    <!-- Top Navigation Menu -->
+    <nav class="dashboard-nav" style="justify-content: space-between; align-items: center; display: flex; width: 100%;">
+      <div style="display: flex; gap: 1rem;">
+        <a href="index.html" class="nav-item active">📊 Dashboard</a>
+        <a href="ledger.html" class="nav-item">📋 Employee Ledger</a>
+      </div>
+    </nav>
+
+    <!-- Filters Panel -->
+    <section class="glass-card filter-panel glow-animation">
+      <div class="filter-group">
+        <label for="filter-corp">Corp/Plant</label>
+        <div class="select-wrapper">
+          <select id="filter-corp">
+            <option value="ALL">All Plants</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-dept">Department</label>
+        <div class="select-wrapper">
+          <select id="filter-dept">
+            <option value="ALL">All Departments</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-attended">Attendance</label>
+        <div class="select-wrapper">
+          <select id="filter-attended">
+            <option value="ALL">All Statuses</option>
+            <option value="Yes">Attended (Yes)</option>
+            <option value="No">Not Attended (No)</option>
+          </select>
+        </div>
+      </div>
+
+
+    </section>
+
+    <!-- KPI Metrics Grid -->
+    <section class="kpi-grid">
+      <div class="glass-card kpi-card blue">
+        <div class="kpi-icon">📊</div>
+        <div class="kpi-info">
+          <span class="kpi-label">Total Mandays</span>
+          <span class="kpi-value" id="kpi-total-mandays">0.0</span>
+        </div>
+      </div>
+
+      <div class="glass-card kpi-card indigo">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-info">
+          <span class="kpi-label">Total Employees</span>
+          <span class="kpi-value" id="kpi-total-employees">0</span>
+        </div>
+      </div>
+
+      <div class="glass-card kpi-card purple">
+        <div class="kpi-icon">📈</div>
+        <div class="kpi-info">
+          <span class="kpi-label">Avg Mandays / Employee</span>
+          <span class="kpi-value" id="kpi-avg-mandays">0.0</span>
+        </div>
+      </div>
+
+      <div class="glass-card kpi-card emerald">
+        <div class="kpi-icon">🏢</div>
+        <div class="kpi-info">
+          <span class="kpi-label">Top Plant / Corp</span>
+          <span class="kpi-value" id="kpi-top-plant">-</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- First Segment: Main Mandays Charts -->
+    <section class="vis-grid-first">
+      <!-- Sum of Mandays by Plant -->
+      <div class="glass-card">
+        <div class="card-header">
+          <div>
+            <h2>Plant Training Volume</h2>
+            <div class="card-subtitle">Total training mandays by Plant / Corporate Division</div>
+          </div>
+        </div>
+        <div class="chart-container-large">
+          <canvas id="chart-plant-mandays"></canvas>
+        </div>
+      </div>
+
+      <!-- Training Status / Department stats -->
+      <div class="glass-card">
+        <div class="card-header">
+          <div>
+            <h2>Department Distribution</h2>
+            <div class="card-subtitle">Training mandays accumulated by departments</div>
+          </div>
+        </div>
+        <div class="chart-container-large">
+          <canvas id="chart-dept-mandays"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Second Segment: Employee Mandays Ranges (Pie Charts) -->
+    <section class="pie-segment-container">
+      <div class="pie-segment-header">
+        <div>
+          <h2 style="font-family: var(--font-heading); font-weight: 700; font-size: 1.5rem;">Employee Mandays Range Analysis</h2>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">
+            Distribution of employees grouped by their accumulated mandays. Click any slice to view employee details.
+          </p>
+        </div>
+        
+        <div class="toggle-container">
+          <button id="toggle-slice-corp" class="toggle-btn active">Group by Corp</button>
+          <button id="toggle-slice-dept" class="toggle-btn">Group by Dept</button>
+        </div>
+      </div>
+
+      <div class="pies-grid" id="ranges-pies-container">
+        <!-- Range 0-10 -->
+        <div class="glass-card pie-card" id="card-range-0-10">
+          <div class="pie-card-header">
+            <span class="pie-card-title">🟢 Range 0-10 Mandays</span>
+            <span class="pie-card-badge" id="badge-range-0-10">0 Employees</span>
+          </div>
+          <div class="chart-container-donut">
+            <canvas id="chart-range-0-10"></canvas>
+          </div>
+        </div>
+
+        <!-- Range 10-20 -->
+        <div class="glass-card pie-card" id="card-range-10-20">
+          <div class="pie-card-header">
+            <span class="pie-card-title">🔵 Range 10-20 Mandays</span>
+            <span class="pie-card-badge" id="badge-range-10-20">0 Employees</span>
+          </div>
+          <div class="chart-container-donut">
+            <canvas id="chart-range-10-20"></canvas>
+          </div>
+        </div>
+
+        <!-- Range 20-30 -->
+        <div class="glass-card pie-card" id="card-range-20-30">
+          <div class="pie-card-header">
+            <span class="pie-card-title">🟡 Range 20-30 Mandays</span>
+            <span class="pie-card-badge" id="badge-range-20-30">0 Employees</span>
+          </div>
+          <div class="chart-container-donut">
+            <canvas id="chart-range-20-30"></canvas>
+          </div>
+        </div>
+
+        <!-- Range 30-40 -->
+        <div class="glass-card pie-card" id="card-range-30-40">
+          <div class="pie-card-header">
+            <span class="pie-card-title">🟠 Range 30-40 Mandays</span>
+            <span class="pie-card-badge" id="badge-range-30-40">0 Employees</span>
+          </div>
+          <div class="chart-container-donut">
+            <canvas id="chart-range-30-40"></canvas>
+          </div>
+        </div>
+
+        <!-- Range 40-50 -->
+        <div class="glass-card pie-card" id="card-range-40-50">
+          <div class="pie-card-header">
+            <span class="pie-card-title">🔴 Range 40-50 Mandays</span>
+            <span class="pie-card-badge" id="badge-range-40-50">0 Employees</span>
+          </div>
+          <div class="chart-container-donut">
+            <canvas id="chart-range-40-50"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Middle Row containing Leadership Track and secondary segments -->
+    <div class="dashboard-middle-row">
+      <!-- Leadership Track (65% width) -->
+      <section class="glass-card table-card" style="margin-top: 0;">
+        <div class="card-header" style="align-items: center; border-bottom: none; margin-bottom: 0.5rem;">
+          <div>
+            <h2>Leadership Track</h2>
+            <div class="card-subtitle">Course enrolment details. Select a course to see participants.</div>
+          </div>
+          <div class="filter-group">
+            <label for="filter-leadership-cat">Category</label>
+            <div class="select-wrapper">
+              <select id="filter-leadership-cat">
+                <option value="ALL">All Categories</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div class="leadership-split">
+          <!-- Course buttons -->
+          <div class="leadership-left">
+            <div id="course-buttons-container" class="course-buttons-grid">
+              <!-- Dynamically populated course buttons -->
+            </div>
+          </div>
+          
+          <!-- Enrolled employees list -->
+          <div class="leadership-right glass-card" style="padding: 1rem; background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.04); min-height: 250px;">
+            <div style="margin-bottom: 0.75rem;">
+              <h3 id="selected-course-title" style="font-family: var(--font-heading); font-size: 1rem; font-weight: 600;">Enrolled Employees</h3>
+              <div id="selected-course-subtitle" class="card-subtitle" style="font-size: 0.75rem;">Select a course to view details</div>
+            </div>
+            <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+              <table>
+                <thead>
+                  <tr style="background-color: #1e293b;">
+                    <th style="padding: 0.5rem 0.75rem; font-size: 0.75rem;">Employee Name</th>
+                    <th style="padding: 0.5rem 0.75rem; font-size: 0.75rem;">Corp/Plant</th>
+                    <th style="padding: 0.5rem 0.75rem; font-size: 0.75rem;">Department</th>
+                  </tr>
+                </thead>
+                <tbody id="leadership-employees-body">
+                  <tr>
+                    <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0; font-size: 0.8rem;">
+                      No course selected
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column containing Business Excellence and Category Progress (35% width) -->
+      <div class="dashboard-right-column">
+        <!-- Business Excellence & TQM -->
+        <section class="glass-card table-card" style="padding: 1rem; margin-top: 0;">
+          <div class="card-header" style="border-bottom: none; margin-bottom: 0.5rem; padding-bottom: 0;">
+            <div>
+              <h2 style="font-size: 1.1rem;">Business Excellence &amp; TQM</h2>
+              <div class="card-subtitle" style="font-size: 0.75rem;">Training mandays targets vs completions</div>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="tqm-card">
+              <span class="tqm-label">Plan</span>
+              <span class="tqm-value" id="tqm-plan-val">200</span>
+            </div>
+            <div class="tqm-card completions">
+              <span class="tqm-label">Actual</span>
+              <span class="tqm-value" id="tqm-actual-val">0</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Category Progress -->
+        <section class="glass-card table-card" style="padding: 1rem; margin-top: 0; flex: 1; display: flex; flex-direction: column;">
+          <div class="card-header" style="border-bottom: none; margin-bottom: 0.5rem; padding-bottom: 0;">
+            <div>
+              <h2 style="font-size: 1.1rem;">Category Progress</h2>
+              <div class="card-subtitle" style="font-size: 0.75rem;">Unique persons count per category</div>
+            </div>
+          </div>
+          <div id="category-progress-container" class="category-progress-grid">
+            <!-- Dynamically populated category progress widgets -->
+          </div>
+        </section>
+      </div>
+    </div>
+
+
+
+  </div>
+
+  <!-- Interactive Drilldown Modal -->
+  <div class="modal-overlay" id="drilldown-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title-area">
+          <h3 id="modal-title">Employee Details</h3>
+          <p id="modal-subtitle">Sub-breakdown of filtered employees</p>
+        </div>
+        <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-content-area">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr style="background-color: #111827;">
+                <th style="padding: 0.75rem 1rem;">Sno</th>
+                <th style="padding: 0.75rem 1rem;">Employee ID</th>
+                <th style="padding: 0.75rem 1rem;">Name</th>
+                <th style="padding: 0.75rem 1rem;">Designation</th>
+                <th style="padding: 0.75rem 1rem;">Department</th>
+                <th style="padding: 0.75rem 1rem;">Corp/Plant</th>
+                <th style="padding: 0.75rem 1rem;">Category</th>
+                <th style="padding: 0.75rem 1rem;">Course Name</th>
+                <th style="padding: 0.75rem 1rem;">From Date</th>
+                <th style="padding: 0.75rem 1rem;">To Date</th>
+                <th style="padding: 0.75rem 1rem;">Organiser</th>
+                <th style="padding: 0.75rem 1rem; text-align: right;">Mandays</th>
+                <th style="padding: 0.75rem 1rem; text-align: center;">Attended</th>
+              </tr>
+            </thead>
+            <tbody id="modal-table-body">
+              <!-- Populated when slice clicked -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load application logic -->
+  <script src="app.js?v=4"></script>
+</body>
+</html>
