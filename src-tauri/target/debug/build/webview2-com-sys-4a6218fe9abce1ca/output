@@ -1,2 +1,0 @@
-cargo:rustc-link-search=native=C:\Users\prasa\sheets dashboard\src-tauri\target\debug\build\webview2-com-sys-4a6218fe9abce1ca\out\x64
-cargo:rustc-link-lib=advapi32

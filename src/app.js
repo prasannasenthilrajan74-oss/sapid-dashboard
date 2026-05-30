@@ -8,6 +8,18 @@ async function tauriInvoke(command, args) {
   throw new Error('Tauri IPC not available. Run this app via Tauri.');
 }
 
+// HTML Escaper to prevent DOM XSS
+function escapeHTML(str) {
+  if (str === null || str === undefined) return '';
+  const s = String(str);
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // Dashboard Application State
 let rawData = [];
 let employeesList = []; // Aggregated employees list
@@ -223,8 +235,9 @@ async function fetchGoogleSheetsData(sheetUrl) {
 
     rawData = parsedData;
 
-    // Save successfully loaded URL to localStorage
+    // Save successfully loaded URL and data to localStorage
     localStorage.setItem('dashboard_sheet_url', sheetUrl);
+    localStorage.setItem('cached_sheet_data', JSON.stringify(parsedData));
 
     // Update reset button visibility
     const resetBtn = document.getElementById('reset-btn');
@@ -239,7 +252,19 @@ async function fetchGoogleSheetsData(sheetUrl) {
     initDashboard();
   } catch (err) {
     console.error('Error fetching Google Sheets data:', err);
-    alert(`Failed to sync: ${err.message}\nFalling back to default preloaded data.`);
+    alert(`Failed to sync: ${err.message}\nFalling back to local cached data.`);
+
+    // Fallback to local storage cache
+    const cachedDataStr = localStorage.getItem('cached_sheet_data');
+    if (cachedDataStr) {
+      try {
+        rawData = JSON.parse(cachedDataStr);
+        initDashboard();
+        return;
+      } catch (parseErr) {
+        console.error('Failed to parse cached data:', parseErr);
+      }
+    }
 
     // Fallback to preloaded data if rawData is empty
     if (rawData.length === 0 && typeof window.PRELOADED_DATA !== 'undefined') {
@@ -888,21 +913,21 @@ function showDrilldownDetail(rangeInfo, groupType, groupValue, employeesInRange)
   rawRowsList.forEach(row => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td style="padding: 0.8rem 1rem;">${row.Sno || '-'}</td>
-      <td style="padding: 0.8rem 1rem; font-weight: 600;">${getRowEmployeeId(row)}</td>
-      <td style="padding: 0.8rem 1rem;">${getRowEmployeeName(row)}</td>
-      <td style="padding: 0.8rem 1rem;">${row.Des || row['Designation'] || row['des'] || row['designation'] || '-'}</td>
-      <td style="padding: 0.8rem 1rem;"><span class="badge-dept">${getRowDepartment(row)}</span></td>
-      <td style="padding: 0.8rem 1rem;"><span class="badge-plant">${getRowCorpPlant(row)}</span></td>
-      <td style="padding: 0.8rem 1rem;">${getRowCategory(row) || '-'}</td>
-      <td style="padding: 0.8rem 1rem; font-size: 0.85rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${getRowCourseName(row)}">${getRowCourseName(row)}</td>
-      <td style="padding: 0.8rem 1rem;">${row.fd || row['From Date'] || row['fd'] || row['from_date'] || '-'}</td>
-      <td style="padding: 0.8rem 1rem;">${row.ed || row['To Date'] || row['ed'] || row['to_date'] || '-'}</td>
-      <td style="padding: 0.8rem 1rem; font-size: 0.85rem;">${row.organisor || row['Organisor'] || row['Organizer'] || row['organizer'] || '-'}</td>
-      <td style="padding: 0.8rem 1rem; text-align: right; font-weight: 700; color: #38bdf8;">${getRowMandays(row).toFixed(1)}</td>
+      <td style="padding: 0.8rem 1rem;">${escapeHTML(row.Sno || '-')}</td>
+      <td style="padding: 0.8rem 1rem; font-weight: 600;">${escapeHTML(getRowEmployeeId(row))}</td>
+      <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowEmployeeName(row))}</td>
+      <td style="padding: 0.8rem 1rem;">${escapeHTML(row.Des || row['Designation'] || row['des'] || row['designation'] || '-')}</td>
+      <td style="padding: 0.8rem 1rem;"><span class="badge-dept">${escapeHTML(getRowDepartment(row))}</span></td>
+      <td style="padding: 0.8rem 1rem;"><span class="badge-plant">${escapeHTML(getRowCorpPlant(row))}</span></td>
+      <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowCategory(row) || '-')}</td>
+      <td style="padding: 0.8rem 1rem; font-size: 0.85rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHTML(getRowCourseName(row))}">${escapeHTML(getRowCourseName(row))}</td>
+      <td style="padding: 0.8rem 1rem;">${escapeHTML(row.fd || row['From Date'] || row['fd'] || row['from_date'] || '-')}</td>
+      <td style="padding: 0.8rem 1rem;">${escapeHTML(row.ed || row['To Date'] || row['ed'] || row['to_date'] || '-')}</td>
+      <td style="padding: 0.8rem 1rem; font-size: 0.85rem;">${escapeHTML(row.organisor || row['Organisor'] || row['Organizer'] || row['organizer'] || '-')}</td>
+      <td style="padding: 0.8rem 1rem; text-align: right; font-weight: 700; color: #38bdf8;">${escapeHTML(getRowMandays(row).toFixed(1))}</td>
       <td style="padding: 0.8rem 1rem; text-align: center;">
         <span style="color: ${getRowAttended(row) === 'Yes' ? '#10b981' : '#f43f5e'}; font-weight: 600;">
-          ${getRowAttended(row) || 'No'}
+          ${escapeHTML(getRowAttended(row) || 'No')}
         </span>
       </td>
     `;
@@ -994,7 +1019,7 @@ function renderLeadershipChart() {
     const btn = document.createElement('div');
     btn.className = `course-card-btn ${selectedLeadershipCourse === courseName ? 'active' : ''}`;
     btn.innerHTML = `
-      <span class="course-btn-title">${courseName}</span>
+      <span class="course-btn-title">${escapeHTML(courseName)}</span>
       <span class="course-btn-value" id="leadership-course-val-${index}">0</span>
     `;
 
@@ -1067,9 +1092,9 @@ function renderLeadershipEmployeesList(course, selectedCat) {
     const tr = document.createElement('tr');
     tr.className = 'clickable-row';
     tr.innerHTML = `
-      <td><span style="font-weight: 600;">${emp.name}</span> <span style="color: var(--text-secondary); font-size: 0.75rem; margin-left: 0.4rem;">(${emp.id})</span></td>
-      <td><span class="badge-plant">${emp.corp}</span></td>
-      <td><span class="badge-dept">${emp.dept}</span></td>
+      <td><span style="font-weight: 600;">${escapeHTML(emp.name)}</span> <span style="color: var(--text-secondary); font-size: 0.75rem; margin-left: 0.4rem;">(${escapeHTML(emp.id)})</span></td>
+      <td><span class="badge-plant">${escapeHTML(emp.corp)}</span></td>
+      <td><span class="badge-dept">${escapeHTML(emp.dept)}</span></td>
     `;
 
     // Click handler to open entire row drilldown modal for this employee, course and category
@@ -1109,21 +1134,21 @@ function renderLeadershipEmployeesList(course, selectedCat) {
       matchingRows.forEach(row => {
         const trModal = document.createElement('tr');
         trModal.innerHTML = `
-          <td style="padding: 0.8rem 1rem;">${row.Sno || '-'}</td>
-          <td style="padding: 0.8rem 1rem; font-weight: 600;">${getRowEmployeeId(row)}</td>
-          <td style="padding: 0.8rem 1rem;">${getRowEmployeeName(row)}</td>
-          <td style="padding: 0.8rem 1rem;">${row.Des || row['Designation'] || row['des'] || row['designation'] || '-'}</td>
-          <td style="padding: 0.8rem 1rem;"><span class="badge-dept">${getRowDepartment(row)}</span></td>
-          <td style="padding: 0.8rem 1rem;"><span class="badge-plant">${getRowCorpPlant(row)}</span></td>
-          <td style="padding: 0.8rem 1rem;">${getRowCategory(row) || '-'}</td>
-          <td style="padding: 0.8rem 1rem; font-size: 0.85rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${getRowCourseName(row)}">${getRowCourseName(row)}</td>
-          <td style="padding: 0.8rem 1rem;">${row.fd || row['From Date'] || row['fd'] || row['from_date'] || '-'}</td>
-          <td style="padding: 0.8rem 1rem;">${row.ed || row['To Date'] || row['ed'] || row['to_date'] || '-'}</td>
-          <td style="padding: 0.8rem 1rem; font-size: 0.85rem;">${row.organisor || row['Organisor'] || row['Organizer'] || row['organizer'] || '-'}</td>
-          <td style="padding: 0.8rem 1rem; text-align: right; font-weight: 700; color: #38bdf8;">${getRowMandays(row).toFixed(1)}</td>
+          <td style="padding: 0.8rem 1rem;">${escapeHTML(row.Sno || '-')}</td>
+          <td style="padding: 0.8rem 1rem; font-weight: 600;">${escapeHTML(getRowEmployeeId(row))}</td>
+          <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowEmployeeName(row))}</td>
+          <td style="padding: 0.8rem 1rem;">${escapeHTML(row.Des || row['Designation'] || row['des'] || row['designation'] || '-')}</td>
+          <td style="padding: 0.8rem 1rem;"><span class="badge-dept">${escapeHTML(getRowDepartment(row))}</span></td>
+          <td style="padding: 0.8rem 1rem;"><span class="badge-plant">${escapeHTML(getRowCorpPlant(row))}</span></td>
+          <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowCategory(row) || '-')}</td>
+          <td style="padding: 0.8rem 1rem; font-size: 0.85rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHTML(getRowCourseName(row))}">${escapeHTML(getRowCourseName(row))}</td>
+          <td style="padding: 0.8rem 1rem;">${escapeHTML(row.fd || row['From Date'] || row['fd'] || row['from_date'] || '-')}</td>
+          <td style="padding: 0.8rem 1rem;">${escapeHTML(row.ed || row['To Date'] || row['ed'] || row['to_date'] || '-')}</td>
+          <td style="padding: 0.8rem 1rem; font-size: 0.85rem;">${escapeHTML(row.organisor || row['Organisor'] || row['Organizer'] || row['organizer'] || '-')}</td>
+          <td style="padding: 0.8rem 1rem; text-align: right; font-weight: 700; color: #38bdf8;">${escapeHTML(getRowMandays(row).toFixed(1))}</td>
           <td style="padding: 0.8rem 1rem; text-align: center;">
             <span style="color: ${getRowAttended(row) === 'Yes' ? '#10b981' : '#f43f5e'}; font-weight: 600;">
-              ${getRowAttended(row) || 'No'}
+              ${escapeHTML(getRowAttended(row) || 'No')}
             </span>
           </td>
         `;
@@ -1209,7 +1234,7 @@ function renderRightColumnAnalytics(filteredRows) {
       const card = document.createElement('div');
       card.className = 'category-progress-card';
       card.innerHTML = `
-        <span class="cat-progress-name">${cat}</span>
+        <span class="cat-progress-name">${escapeHTML(cat)}</span>
         <span class="cat-progress-val" id="cat-progress-val-${index}">0</span>
       `;
       container.appendChild(card);

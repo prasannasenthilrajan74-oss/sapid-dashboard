@@ -8,6 +8,18 @@ async function tauriInvoke(command, args) {
   throw new Error('Tauri IPC not available. Run this app via Tauri.');
 }
 
+// HTML Escaper to prevent DOM XSS
+function escapeHTML(str) {
+  if (str === null || str === undefined) return '';
+  const s = String(str);
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // Ledger Application State
 let rawData = [];
 let employeesList = []; // Aggregated employees list
@@ -177,9 +189,23 @@ async function fetchSpreadsheetData(sheetUrl) {
     }
 
     rawData = parsedData;
+    localStorage.setItem('cached_sheet_data', JSON.stringify(parsedData));
     initLedger();
   } catch (err) {
     console.error('Error fetching sheet data:', err);
+
+    // Fallback to local storage cache
+    const cachedDataStr = localStorage.getItem('cached_sheet_data');
+    if (cachedDataStr) {
+      try {
+        rawData = JSON.parse(cachedDataStr);
+        initLedger();
+        return;
+      } catch (parseErr) {
+        console.error('Failed to parse cached data:', parseErr);
+      }
+    }
+
     if (typeof window.PRELOADED_DATA !== 'undefined') {
       rawData = window.PRELOADED_DATA;
       initLedger();
@@ -360,15 +386,15 @@ function renderEmployeeTable() {
     const tr = document.createElement('tr');
     tr.className = 'ledger-row';
     tr.innerHTML = `
-      <td style="font-weight: 600;">${emp.id}</td>
-      <td>${emp.name}</td>
-      <td><span class="badge-plant">${emp.corp}</span></td>
-      <td><span class="badge-dept">${emp.dept}</span></td>
+      <td style="font-weight: 600;">${escapeHTML(emp.id)}</td>
+      <td>${escapeHTML(emp.name)}</td>
+      <td><span class="badge-plant">${escapeHTML(emp.corp)}</span></td>
+      <td><span class="badge-dept">${escapeHTML(emp.dept)}</span></td>
       <td style="text-align: center;">
-        <span style="font-weight: 500;">${emp.coursesAttended}</span>
-        <span style="color: var(--text-muted);">/ ${emp.coursesTotal}</span>
+        <span style="font-weight: 500;">${escapeHTML(emp.coursesAttended)}</span>
+        <span style="color: var(--text-muted);">/ ${escapeHTML(emp.coursesTotal)}</span>
       </td>
-      <td style="text-align: right; font-weight: 700; color: #38bdf8;">${emp.mandaysSum.toFixed(1)}</td>
+      <td style="text-align: right; font-weight: 700; color: #38bdf8;">${escapeHTML(emp.mandaysSum.toFixed(1))}</td>
     `;
     
     tr.addEventListener('click', () => {
@@ -408,20 +434,20 @@ function showEmployeeDetailModal(empId, empName) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td style="padding: 0.8rem 1rem;">${index + 1}</td>
-      <td style="padding: 0.8rem 1rem; font-weight: 600;">${getRowEmployeeId(row)}</td>
-      <td style="padding: 0.8rem 1rem;">${getRowEmployeeName(row)}</td>
-      <td style="padding: 0.8rem 1rem;">${row.Des || row['Designation'] || row['des'] || row['designation'] || '-'}</td>
-      <td style="padding: 0.8rem 1rem;"><span class="badge-dept">${getRowDepartment(row)}</span></td>
-      <td style="padding: 0.8rem 1rem;"><span class="badge-plant">${getRowCorpPlant(row)}</span></td>
-      <td style="padding: 0.8rem 1rem;">${getRowCategory(row) || '-'}</td>
-      <td style="padding: 0.8rem 1rem; font-size: 0.85rem; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${getRowCourseName(row)}">${getRowCourseName(row)}</td>
-      <td style="padding: 0.8rem 1rem;">${row.fd || row['From Date'] || row['fd'] || row['from_date'] || '-'}</td>
-      <td style="padding: 0.8rem 1rem;">${row.ed || row['To Date'] || row['ed'] || row['to_date'] || '-'}</td>
-      <td style="padding: 0.8rem 1rem; font-size: 0.85rem;">${row.organisor || row['Organisor'] || row['Organizer'] || row['organizer'] || '-'}</td>
-      <td style="padding: 0.8rem 1rem; text-align: right; font-weight: 700; color: #38bdf8;">${getRowMandays(row).toFixed(1)}</td>
+      <td style="padding: 0.8rem 1rem; font-weight: 600;">${escapeHTML(getRowEmployeeId(row))}</td>
+      <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowEmployeeName(row))}</td>
+      <td style="padding: 0.8rem 1rem;">${escapeHTML(row.Des || row['Designation'] || row['des'] || row['designation'] || '-')}</td>
+      <td style="padding: 0.8rem 1rem;"><span class="badge-dept">${escapeHTML(getRowDepartment(row))}</span></td>
+      <td style="padding: 0.8rem 1rem;"><span class="badge-plant">${escapeHTML(getRowCorpPlant(row))}</span></td>
+      <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowCategory(row) || '-')}</td>
+      <td style="padding: 0.8rem 1rem; font-size: 0.85rem; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHTML(getRowCourseName(row))}">${escapeHTML(getRowCourseName(row))}</td>
+      <td style="padding: 0.8rem 1rem;">${escapeHTML(row.fd || row['From Date'] || row['fd'] || row['from_date'] || '-')}</td>
+      <td style="padding: 0.8rem 1rem;">${escapeHTML(row.ed || row['To Date'] || row['ed'] || row['to_date'] || '-')}</td>
+      <td style="padding: 0.8rem 1rem; font-size: 0.85rem;">${escapeHTML(row.organisor || row['Organisor'] || row['Organizer'] || row['organizer'] || '-')}</td>
+      <td style="padding: 0.8rem 1rem; text-align: right; font-weight: 700; color: #38bdf8;">${escapeHTML(getRowMandays(row).toFixed(1))}</td>
       <td style="padding: 0.8rem 1rem; text-align: center;">
         <span style="color: ${getRowAttended(row) === 'Yes' ? '#10b981' : '#f43f5e'}; font-weight: 600;">
-          ${getRowAttended(row) || 'No'}
+          ${escapeHTML(getRowAttended(row) || 'No')}
         </span>
       </td>
     `;

@@ -77,8 +77,8 @@ fn to_csv_export_url(url_str: &str) -> String {
 fn validate_google_host(url_str: &str) -> Result<Url, String> {
     let parsed = Url::parse(url_str).map_err(|_| "Invalid URL format.".to_string())?;
     let host = parsed.host_str().unwrap_or("");
-    if !host.ends_with("google.com") {
-        return Err("Invalid URL. Host must be google.com.".to_string());
+    if host != "google.com" && !host.ends_with(".google.com") {
+        return Err("Invalid URL. Host must be google.com or a subdomain of google.com.".to_string());
     }
     Ok(parsed)
 }
