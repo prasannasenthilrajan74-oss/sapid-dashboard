@@ -20,6 +20,81 @@ function escapeHTML(str) {
     .replace(/'/g, '&#039;');
 }
 
+const MAX_CONFIG_FILE_BYTES = 2 * 1024 * 1024;
+const MAX_CACHED_ROWS = 25000;
+
+// Creates an option with DOM APIs so spreadsheet values cannot become executable HTML.
+function appendSafeOption(selectElement, value, label) {
+  const option = document.createElement('option');
+  option.value = String(value);
+  option.textContent = String(label);
+  selectElement.appendChild(option);
+}
+
+// Validates imported row arrays before writing them to localStorage or app state.
+function validateImportedRows(rows) {
+  if (!Array.isArray(rows)) {
+    throw new Error('Cached sheet data must be an array.');
+  }
+  if (rows.length > MAX_CACHED_ROWS) {
+    throw new Error(`Cached sheet data is too large. Maximum allowed rows: ${MAX_CACHED_ROWS}.`);
+  }
+  return rows;
+}
+
+// Stores sheet data only after size checks so localStorage cannot be filled accidentally.
+function cacheSheetData(rows) {
+  const validatedRows = validateImportedRows(rows);
+  localStorage.setItem('cached_sheet_data', JSON.stringify(validatedRows));
+}
+
+// Keeps imported sync URLs limited to the Google sources accepted by the Tauri backend.
+function isAllowedGoogleDataUrl(urlValue) {
+  try {
+    const parsed = new URL(urlValue);
+    const path = parsed.pathname;
+    const isSheet = parsed.hostname === 'docs.google.com' && path.startsWith('/spreadsheets/d/');
+    const isScript = parsed.hostname === 'script.google.com'
+      && (path.startsWith('/macros/s/') || path.startsWith('/a/macros/'))
+      && path.endsWith('/exec');
+    return parsed.protocol === 'https:' && (isSheet || isScript);
+  } catch {
+    return false;
+  }
+}
+
+// Show a premium glassmorphic toast notification
+function showToast(message, type = 'success') {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    document.body.appendChild(container);
+  }
+  
+  const toast = document.createElement('div');
+  toast.className = `toast-notification ${type}`;
+  toast.innerHTML = `
+    <span class="toast-icon">${type === 'success' ? '✅' : '❌'}</span>
+    <span class="toast-message">${escapeHTML(message)}</span>
+  `;
+  
+  container.appendChild(toast);
+  
+  // Trigger transition
+  setTimeout(() => {
+    toast.classList.add('show');
+  }, 10);
+  
+  // Auto-remove after 3 seconds
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => {
+      toast.remove();
+    }, 300);
+  }, 3000);
+}
+
 // Ledger Application State
 let rawData = [];
 let employeesList = []; // Aggregated employees list
@@ -189,10 +264,11 @@ async function fetchSpreadsheetData(sheetUrl) {
     }
 
     rawData = parsedData;
-    localStorage.setItem('cached_sheet_data', JSON.stringify(parsedData));
+    cacheSheetData(parsedData);
     initLedger();
   } catch (err) {
     console.error('Error fetching sheet data:', err);
+    tauriInvoke('append_log', { level: 'error', message: `Google Sheet fetch error: ${err.message}` }).catch(console.error);
 
     // Fallback to local storage cache
     const cachedDataStr = localStorage.getItem('cached_sheet_data');
@@ -238,16 +314,18 @@ function initLedger() {
 
   // Corp Select
   const corpSelect = document.getElementById('filter-corp');
-  corpSelect.innerHTML = '<option value="ALL">All Plants</option>';
+  corpSelect.textContent = '';
+  appendSafeOption(corpSelect, 'ALL', 'All Plants');
   Array.from(corps).sort().forEach(corp => {
-    corpSelect.innerHTML += `<option value="${corp}">${corp}</option>`;
+    appendSafeOption(corpSelect, corp, corp);
   });
 
   // Dept Select
   const deptSelect = document.getElementById('filter-dept');
-  deptSelect.innerHTML = '<option value="ALL">All Departments</option>';
+  deptSelect.textContent = '';
+  appendSafeOption(deptSelect, 'ALL', 'All Departments');
   Array.from(depts).sort().forEach(dept => {
-    deptSelect.innerHTML += `<option value="${dept}">${dept}</option>`;
+    appendSafeOption(deptSelect, dept, dept);
   });
 
   // Reset Filters UI
@@ -565,6 +643,188 @@ function setupLedgerListeners() {
   document.getElementById('drilldown-modal').addEventListener('click', (e) => {
     if (e.target.id === 'drilldown-modal') closeModal();
   });
+
+  // ─── Settings Footer & Modals Listeners ─────────────────────────────────────
+  
+  // Privacy Policy modal
+  const linkPrivacy = document.getElementById('link-privacy-policy');
+  const modalPrivacy = document.getElementById('privacy-modal');
+  const btnClosePrivacy = document.getElementById('btn-close-privacy');
+  
+  if (linkPrivacy && modalPrivacy && btnClosePrivacy) {
+    linkPrivacy.addEventListener('click', (e) => {
+      e.preventDefault();
+      modalPrivacy.classList.add('active');
+    });
+    btnClosePrivacy.addEventListener('click', () => {
+      modalPrivacy.classList.remove('active');
+    });
+    modalPrivacy.addEventListener('click', (e) => {
+      if (e.target === modalPrivacy) modalPrivacy.classList.remove('active');
+    });
+  }
+
+  // Licenses modal
+  const linkLicenses = document.getElementById('link-licenses');
+  const modalLicenses = document.getElementById('licenses-modal');
+  const btnCloseLicenses = document.getElementById('btn-close-licenses');
+  
+  if (linkLicenses && modalLicenses && btnCloseLicenses) {
+    linkLicenses.addEventListener('click', (e) => {
+      e.preventDefault();
+      modalLicenses.classList.add('active');
+    });
+    btnCloseLicenses.addEventListener('click', () => {
+      modalLicenses.classList.remove('active');
+    });
+    modalLicenses.addEventListener('click', (e) => {
+      if (e.target === modalLicenses) modalLicenses.classList.remove('active');
+    });
+  }
+
+  // Error Logs modal
+  const btnViewLogs = document.getElementById('btn-view-logs');
+  const modalLogs = document.getElementById('logs-modal');
+  const btnCloseLogs = document.getElementById('btn-close-logs');
+  const logContentArea = document.getElementById('log-content-area');
+  const btnOpenLogsFolder = document.getElementById('btn-open-logs-folder');
+  const btnClearLogs = document.getElementById('btn-clear-logs');
+
+  const loadLogs = async () => {
+    if (logContentArea) {
+      logContentArea.innerText = 'Loading logs...';
+      try {
+        const logs = await tauriInvoke('read_logs');
+        logContentArea.innerText = logs;
+      } catch (err) {
+        logContentArea.innerText = `Error loading logs: ${err.message}`;
+      }
+    }
+  };
+
+  if (btnViewLogs && modalLogs && btnCloseLogs) {
+    btnViewLogs.addEventListener('click', (e) => {
+      e.preventDefault();
+      modalLogs.classList.add('active');
+      loadLogs();
+    });
+    btnCloseLogs.addEventListener('click', () => {
+      modalLogs.classList.remove('active');
+    });
+    modalLogs.addEventListener('click', (e) => {
+      if (e.target === modalLogs) modalLogs.classList.remove('active');
+    });
+  }
+
+  if (btnOpenLogsFolder) {
+    btnOpenLogsFolder.addEventListener('click', async () => {
+      try {
+        await tauriInvoke('open_log_directory');
+      } catch (err) {
+        alert(`Failed to open log folder: ${err.message}`);
+      }
+    });
+  }
+
+  if (btnClearLogs) {
+    btnClearLogs.addEventListener('click', async () => {
+      if (confirm('Are you sure you want to clear all error logs?')) {
+        try {
+          await tauriInvoke('clear_logs');
+          loadLogs();
+        } catch (err) {
+          alert(`Failed to clear logs: ${err.message}`);
+        }
+      }
+    });
+  }
+
+  // User manual click handler
+  const linkUserManual = document.getElementById('link-user-manual');
+  if (linkUserManual) {
+    linkUserManual.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.open('USER_MANUAL.pdf', '_blank');
+    });
+  }
+
+  // Configuration Backup/Export
+  const btnExport = document.getElementById('btn-export-config');
+  if (btnExport) {
+    btnExport.addEventListener('click', () => {
+      try {
+        const config = {
+          dashboard_sheet_url: localStorage.getItem('dashboard_sheet_url') || '',
+          cached_sheet_data: JSON.parse(localStorage.getItem('cached_sheet_data') || '[]'),
+          exported_at: new Date().toISOString(),
+          app: "SkillTrack Analyzer",
+          version: "1.0.0"
+        };
+        const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `skilltrack_config_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Configuration exported successfully!');
+      } catch (err) {
+        alert(`Export failed: ${err.message}`);
+        tauriInvoke('append_log', { level: 'error', message: `Config export failed: ${err.message}` }).catch(console.error);
+      }
+    });
+  }
+
+  // Configuration Import
+  const btnImport = document.getElementById('btn-import-config');
+  const importFile = document.getElementById('import-config-file');
+  if (btnImport && importFile) {
+    btnImport.addEventListener('click', () => {
+      importFile.click();
+    });
+
+    importFile.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > MAX_CONFIG_FILE_BYTES) {
+        alert(`Import failed: configuration file is larger than ${MAX_CONFIG_FILE_BYTES / 1024 / 1024} MB.`);
+        importFile.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const config = JSON.parse(evt.target.result);
+          if (!config.dashboard_sheet_url && (!config.cached_sheet_data || !Array.isArray(config.cached_sheet_data))) {
+            throw new Error('Invalid file format. Must contain a dashboard URL or cached sheet data.');
+          }
+
+          if (config.dashboard_sheet_url) {
+            if (!isAllowedGoogleDataUrl(config.dashboard_sheet_url)) {
+              throw new Error('Imported dashboard URL must be a supported HTTPS Google Sheets or Apps Script /exec link.');
+            }
+            localStorage.setItem('dashboard_sheet_url', config.dashboard_sheet_url);
+          }
+          if (config.cached_sheet_data) {
+            rawData = validateImportedRows(config.cached_sheet_data);
+            cacheSheetData(rawData);
+          }
+
+          alert('Configuration imported successfully! Refreshing ledger...');
+          initLedger();
+        } catch (err) {
+          alert(`Import failed: ${err.message}`);
+          tauriInvoke('append_log', { level: 'error', message: `Config import failed: ${err.message}` }).catch(console.error);
+        } finally {
+          importFile.value = '';
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
 }
 
 // DOM content loaded

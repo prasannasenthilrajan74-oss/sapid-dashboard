@@ -312,50 +312,138 @@
       </div>
     </div>
 
+  <!-- Footer Component -->
+  <footer class="dashboard-footer">
+    <div class="footer-left">
+      <span class="app-version">SkillTrack Analyzer v1.0.0</span>
+      <span class="divider">|</span>
+      <a href="#" id="link-user-manual" class="footer-link">📖 User Manual (PDF)</a>
+      <span class="divider">|</span>
+      <a href="#" id="link-privacy-policy" class="footer-link">🔒 Privacy Policy</a>
+      <span class="divider">|</span>
+      <a href="#" id="link-licenses" class="footer-link">📄 Licenses</a>
+    </div>
+    <div class="footer-right">
+      <button id="btn-export-config" class="footer-btn">📥 Export Config</button>
+      <button id="btn-import-config" class="footer-btn">📤 Import Config</button>
+      <input type="file" id="import-config-file" accept=".json" class="hidden">
+      <button id="btn-view-logs" class="footer-btn secondary">🪵 Error Logs</button>
+    </div>
+  </footer>
+</div>
 
-
-  </div>
-
-  <!-- Interactive Drilldown Modal -->
-  <div class="modal-overlay" id="drilldown-modal">
-    <div class="modal-container">
-      <div class="modal-header">
-        <div class="modal-title-area">
-          <h3 id="modal-title">Employee Details</h3>
-          <p id="modal-subtitle">Sub-breakdown of filtered employees</p>
-        </div>
-        <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+<!-- Interactive Drilldown Modal -->
+<div class="modal-overlay" id="drilldown-modal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <div class="modal-title-area">
+        <h3 id="modal-title">Employee Details</h3>
+        <p id="modal-subtitle">Sub-breakdown of filtered employees</p>
       </div>
-      <div class="modal-content-area">
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr style="background-color: #111827;">
-                <th style="padding: 0.75rem 1rem;">Sno</th>
-                <th style="padding: 0.75rem 1rem;">Employee ID</th>
-                <th style="padding: 0.75rem 1rem;">Name</th>
-                <th style="padding: 0.75rem 1rem;">Designation</th>
-                <th style="padding: 0.75rem 1rem;">Department</th>
-                <th style="padding: 0.75rem 1rem;">Corp/Plant</th>
-                <th style="padding: 0.75rem 1rem;">Category</th>
-                <th style="padding: 0.75rem 1rem;">Course Name</th>
-                <th style="padding: 0.75rem 1rem;">From Date</th>
-                <th style="padding: 0.75rem 1rem;">To Date</th>
-                <th style="padding: 0.75rem 1rem;">Organiser</th>
-                <th style="padding: 0.75rem 1rem; text-align: right;">Mandays</th>
-                <th style="padding: 0.75rem 1rem; text-align: center;">Attended</th>
-              </tr>
-            </thead>
-            <tbody id="modal-table-body">
-              <!-- Populated when slice clicked -->
-            </tbody>
-          </table>
-        </div>
+      <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+    </div>
+    <div class="modal-content-area">
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr style="background-color: #111827;">
+              <th style="padding: 0.75rem 1rem;">Sno</th>
+              <th style="padding: 0.75rem 1rem;">Employee ID</th>
+              <th style="padding: 0.75rem 1rem;">Name</th>
+              <th style="padding: 0.75rem 1rem;">Designation</th>
+              <th style="padding: 0.75rem 1rem;">Department</th>
+              <th style="padding: 0.75rem 1rem;">Corp/Plant</th>
+              <th style="padding: 0.75rem 1rem;">Category</th>
+              <th style="padding: 0.75rem 1rem;">Course Name</th>
+              <th style="padding: 0.75rem 1rem;">From Date</th>
+              <th style="padding: 0.75rem 1rem;">To Date</th>
+              <th style="padding: 0.75rem 1rem;">Organiser</th>
+              <th style="padding: 0.75rem 1rem; text-align: right;">Mandays</th>
+              <th style="padding: 0.75rem 1rem; text-align: center;">Attended</th>
+            </tr>
+          </thead>
+          <tbody id="modal-table-body">
+            <!-- Populated when slice clicked -->
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Load application logic -->
-  <script src="app.js?v=4"></script>
+<!-- Privacy Policy Modal -->
+<div class="modal-overlay" id="privacy-modal">
+  <div class="modal-container modal-small">
+    <div class="modal-header">
+      <div class="modal-title-area">
+        <h3>Privacy Policy</h3>
+        <p>SkillTrack Analyzer Data Protection</p>
+      </div>
+      <button class="modal-close-btn" id="btn-close-privacy">&times;</button>
+    </div>
+    <div class="modal-content-area text-content">
+      <h4>1. Local-First Architecture</h4>
+      <p>SkillTrack Analyzer is designed to be a local-first application. All processes run locally on your system. None of your data, sheet configurations, or uploaded spreadsheets are sent to external trackers or analytics servers.</p>
+      
+      <h4>2. Google Sheets & Apps Script Sync</h4>
+      <p>When syncing with Google Sheets, the application communicates directly with Google servers. For domain-restricted links, the communication happens entirely within your local webview using your current active Google Workspace session. No credentials or sheet data are stored or routed through intermediate APIs.</p>
+
+      <h4>3. Local Configuration Storage</h4>
+      <p>Sync URLs and cached spreadsheet rows are saved in your local webview's <code>localStorage</code> database to persist your dashboard state. This data is stored strictly on your device.</p>
+
+      <h4>4. Error Logging</h4>
+      <p>Application runtime error logs are written to your local file system under the application's local log directory to assist in diagnostics. These logs never leave your machine.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Third-Party Licenses Modal -->
+<div class="modal-overlay" id="licenses-modal">
+  <div class="modal-container modal-small">
+    <div class="modal-header">
+      <div class="modal-title-area">
+        <h3>Third-Party Licenses</h3>
+        <p>Open-source software used in SkillTrack Analyzer</p>
+      </div>
+      <button class="modal-close-btn" id="btn-close-licenses">&times;</button>
+    </div>
+    <div class="modal-content-area text-content">
+      <p>SkillTrack Analyzer is built using the following open-source libraries:</p>
+      <ul>
+        <li><strong>Tauri Framework</strong> (MIT License) - Cross-platform GUI framework.</li>
+        <li><strong>Chart.js</strong> (MIT License) - Beautiful dashboard charting.</li>
+        <li><strong>SheetJS (xlsx)</strong> (Apache 2.0 / MIT) - Client-side Excel parser.</li>
+        <li><strong>Reqwest & Tokio</strong> (MIT License) - Rust network utilities.</li>
+        <li><strong>Serde & Serde JSON</strong> (MIT / Apache 2.0) - Rust serialization framework.</li>
+        <li><strong>Chrono</strong> (MIT / Apache 2.0) - Rust date/time library.</li>
+        <li><strong>PDFKit</strong> (MIT License) - User manual PDF compiler.</li>
+      </ul>
+      <p>For more detailed information, please review the <code>LICENSE-THIRD-PARTY.md</code> file in the application directory.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Local Error Logs Modal -->
+<div class="modal-overlay" id="logs-modal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <div class="modal-title-area">
+        <h3>Local Error Logs</h3>
+        <p>Recent diagnostic logs generated by the system</p>
+      </div>
+      <button class="modal-close-btn" id="btn-close-logs">&times;</button>
+    </div>
+    <div class="modal-content-area">
+      <pre id="log-content-area" class="log-viewer-pre">Loading logs...</pre>
+    </div>
+    <div class="modal-footer-actions" style="display: flex; gap: 1rem; justify-content: flex-end; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08);">
+      <button id="btn-open-logs-folder" class="footer-btn">📂 Open Logs Folder</button>
+      <button id="btn-clear-logs" class="footer-btn secondary" style="background: rgba(244, 63, 94, 0.1); color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.2);">🗑️ Clear Logs</button>
+    </div>
+  </div>
+</div>
+
+<!-- Load application logic -->
+<script src="app.js?v=4"></script>
 </body>
 </html>

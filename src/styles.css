@@ -1428,4 +1428,200 @@ tr:hover td {
   background-color: rgba(14, 165, 233, 0.06) !important;
 }
 
+/* ─── Settings Footer & Modals Styling ────────────────────────────────────────── */
+
+.dashboard-footer {
+  margin-top: 2rem;
+  padding: 1.25rem 1.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  border-top: 1px solid var(--border-color);
+  background: rgba(17, 24, 39, 0.45);
+  border-radius: var(--border-radius-md);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-sm);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.app-version {
+  font-weight: 600;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+}
+
+.divider {
+  color: rgba(255, 255, 255, 0.08);
+}
+
+.footer-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: var(--transition-fast);
+  font-weight: 500;
+}
+
+.footer-link:hover {
+  color: var(--accent-blue);
+  text-shadow: 0 0 8px rgba(14, 165, 233, 0.4);
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.footer-btn {
+  background: rgba(14, 165, 233, 0.1);
+  color: var(--accent-blue);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  outline: none;
+}
+
+.footer-btn:hover {
+  background: var(--accent-blue);
+  color: #fff;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 12px rgba(14, 165, 233, 0.3);
+  transform: translateY(-1px);
+}
+
+.footer-btn.secondary {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.footer-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: none;
+}
+
+/* Modals sizing and text content customization */
+.modal-small {
+  max-width: 650px !important;
+}
+
+.text-content {
+  line-height: 1.6;
+  font-size: 0.95rem;
+  color: #e2e8f0;
+}
+
+.text-content h4 {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.text-content p {
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+}
+
+.text-content ul {
+  margin-bottom: 1.25rem;
+  padding-left: 1.5rem;
+  color: var(--text-secondary);
+}
+
+.text-content li {
+  margin-bottom: 0.5rem;
+}
+
+.log-viewer-pre {
+  background: #090d16;
+  color: #a6adbb;
+  padding: 1.25rem;
+  border-radius: var(--border-radius-sm);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  overflow: auto;
+  max-height: 400px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* Toast Notifications */
+#toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast-notification {
+  background: rgba(17, 24, 39, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--border-radius-sm);
+  padding: 0.85rem 1.5rem;
+  box-shadow: var(--shadow-lg), 0 0 15px rgba(14, 165, 233, 0.15);
+  backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 0.9rem;
+  transform: translateX(120%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: auto;
+}
+
+.toast-notification.show {
+  transform: translateX(0);
+}
+
+.toast-notification.success {
+  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow: var(--shadow-lg), 0 0 15px rgba(16, 185, 129, 0.15);
+}
+
+.toast-notification.error {
+  border-color: rgba(244, 63, 94, 0.3);
+  box-shadow: var(--shadow-lg), 0 0 15px rgba(244, 63, 94, 0.15);
+}
+
+.toast-icon {
+  font-size: 1.1rem;
+}
+
 
