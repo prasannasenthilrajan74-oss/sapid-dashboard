@@ -1,16 +1,16 @@
 [package]
-name = "skilltrack-analyzer"
+name = "sapid-license-analyzer"
 version = "1.0.0"
-description = "SkillTrack Analyzer - Cross-Platform HR Training Dashboard"
+description = "SAPID License Analyzer - Cross-Platform SAP User License Dashboard"
 authors = []
 edition = "2021"
 
 [lib]
-name = "skilltrack_analyzer_lib"
+name = "sapid_license_analyzer_lib"
 crate-type = ["rlib"]
 
 [[bin]]
-name = "skilltrack-analyzer"
+name = "sapid-license-analyzer"
 path = "src/main.rs"
 
 [build-dependencies]

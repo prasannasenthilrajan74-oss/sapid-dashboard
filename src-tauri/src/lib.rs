@@ -188,12 +188,10 @@ async fn validate_url(url: String) -> Result<ApiResponse, String> {
 /// (they must be fetched by the browser WebView with the user's Google session).
 #[tauri::command]
 async fn fetch_sheet_data(url: String) -> Result<ApiResponse, String> {
-    let default_url = "https://script.google.com/macros/s/AKfycbytaI36PDf09D7O2RicMWEkGn-JXiew3zPL6bc3OLGKTc0klmd0gUj9ZCfdg2JvY9Sb/exec";
-    let sheet_url = if url.trim().is_empty() {
-        default_url.to_string()
-    } else {
-        url.trim().to_string()
-    };
+    let sheet_url = url.trim().to_string();
+    if sheet_url.is_empty() {
+        return Err("Spreadsheet URL is required.".to_string());
+    }
 
     validate_allowed_source_url(&sheet_url).map_err(|e| e)?;
 

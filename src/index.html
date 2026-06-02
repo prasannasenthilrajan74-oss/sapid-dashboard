@@ -1,16 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SkillTrack Analyzer</title>
-  <meta name="description" content="SkillTrack Analyzer — Interactive Training & Employee Development Dashboard">
+  <title>SAP User License Analyzer</title>
+  <meta name="description" content="SAP User License Analyzer — Interactive SAP User Licensing & Logon Activity Dashboard">
   <link rel="stylesheet" href="styles.css?v=3">
   <!-- Chart.js for beautiful charts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- SheetJS for reading uploaded Excel files client-side -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- PDF Export: html2canvas (screenshot) + jsPDF (PDF writer) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
+
 <body>
   <!-- Ambient background glow elements -->
   <div class="bg-glow-top"></div>
@@ -20,11 +25,11 @@
     <!-- Header Section -->
     <header class="dashboard-header">
       <div class="header-title-section">
-        <h1>SkillTrack Analyzer</h1>
-        <p>Interactive Training &amp; Employee Development Dashboard</p>
+        <h1>SAP User License Analyzer</h1>
+        <p>Interactive SAP User Licensing &amp; Logon Activity Dashboard</p>
       </div>
-      
-      <div class="file-upload-container">
+
+      <div class="file-upload-container" data-html2canvas-ignore="true">
         <div class="sheet-sync-container">
           <span>🔗</span>
           <input type="text" id="sheet-url-input" class="sheet-sync-input" placeholder="Google Sheets Link...">
@@ -41,7 +46,8 @@
     </header>
 
     <!-- Top Navigation Menu -->
-    <nav class="dashboard-nav" style="justify-content: space-between; align-items: center; display: flex; width: 100%;">
+    <nav class="dashboard-nav" data-html2canvas-ignore="true"
+      style="justify-content: space-between; align-items: center; display: flex; width: 100%;">
       <div style="display: flex; gap: 1rem;">
         <a href="index.html" class="nav-item active">📊 Dashboard</a>
         <a href="ledger.html" class="nav-item">📋 Employee Ledger</a>
@@ -51,10 +57,10 @@
     <!-- Filters Panel -->
     <section class="glass-card filter-panel glow-animation">
       <div class="filter-group">
-        <label for="filter-corp">Corp/Plant</label>
+        <label for="filter-license">License ID</label>
         <div class="select-wrapper">
-          <select id="filter-corp">
-            <option value="ALL">All Plants</option>
+          <select id="filter-license">
+            <option value="ALL">All Licenses</option>
           </select>
         </div>
       </div>
@@ -67,19 +73,6 @@
           </select>
         </div>
       </div>
-
-      <div class="filter-group">
-        <label for="filter-attended">Attendance</label>
-        <div class="select-wrapper">
-          <select id="filter-attended">
-            <option value="ALL">All Statuses</option>
-            <option value="Yes">Attended (Yes)</option>
-            <option value="No">Not Attended (No)</option>
-          </select>
-        </div>
-      </div>
-
-
     </section>
 
     <!-- KPI Metrics Grid -->
@@ -87,48 +80,48 @@
       <div class="glass-card kpi-card blue">
         <div class="kpi-icon">📊</div>
         <div class="kpi-info">
-          <span class="kpi-label">Total Mandays</span>
-          <span class="kpi-value" id="kpi-total-mandays">0.0</span>
+          <span class="kpi-label">Total Users</span>
+          <span class="kpi-value" id="kpi-total-users">0</span>
         </div>
       </div>
 
       <div class="glass-card kpi-card indigo">
         <div class="kpi-icon">👥</div>
         <div class="kpi-info">
-          <span class="kpi-label">Total Employees</span>
-          <span class="kpi-value" id="kpi-total-employees">0</span>
+          <span class="kpi-label">Total Purchased</span>
+          <span class="kpi-value" id="kpi-total-purchased">0</span>
         </div>
       </div>
 
       <div class="glass-card kpi-card purple">
         <div class="kpi-icon">📈</div>
         <div class="kpi-info">
-          <span class="kpi-label">Avg Mandays / Employee</span>
-          <span class="kpi-value" id="kpi-avg-mandays">0.0</span>
+          <span class="kpi-label">Available Licenses</span>
+          <span class="kpi-value" id="kpi-available-licenses">0</span>
         </div>
       </div>
 
       <div class="glass-card kpi-card emerald">
         <div class="kpi-icon">🏢</div>
         <div class="kpi-info">
-          <span class="kpi-label">Top Plant / Corp</span>
-          <span class="kpi-value" id="kpi-top-plant">-</span>
+          <span class="kpi-label">Top License Type</span>
+          <span class="kpi-value" id="kpi-top-license">-</span>
         </div>
       </div>
     </section>
 
-    <!-- First Segment: Main Mandays Charts -->
+    <!-- First Segment: Main Licensing & Logon Charts -->
     <section class="vis-grid-first">
-      <!-- Sum of Mandays by Plant -->
+      <!-- License Distribution Chart -->
       <div class="glass-card">
         <div class="card-header">
           <div>
-            <h2>Plant Training Volume</h2>
-            <div class="card-subtitle">Total training mandays by Plant / Corporate Division</div>
+            <h2>License Distribution</h2>
+            <div class="card-subtitle">Total assigned users by License ID (sorted alphabetically)</div>
           </div>
         </div>
         <div class="chart-container-large">
-          <canvas id="chart-plant-mandays"></canvas>
+          <canvas id="chart-license-distribution"></canvas>
         </div>
       </div>
 
@@ -137,135 +130,72 @@
         <div class="card-header">
           <div>
             <h2>Department Distribution</h2>
-            <div class="card-subtitle">Training mandays accumulated by departments</div>
+            <div class="card-subtitle">Active licenses accumulated by departments</div>
           </div>
         </div>
         <div class="chart-container-large">
-          <canvas id="chart-dept-mandays"></canvas>
+          <canvas id="chart-dept-distribution"></canvas>
         </div>
       </div>
     </section>
 
-    <!-- Second Segment: Employee Mandays Ranges (Pie Charts) -->
-    <section class="pie-segment-container">
-      <div class="pie-segment-header">
-        <div>
-          <h2 style="font-family: var(--font-heading); font-weight: 700; font-size: 1.5rem;">Employee Mandays Range Analysis</h2>
-          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">
-            Distribution of employees grouped by their accumulated mandays. Click any slice to view employee details.
-          </p>
-        </div>
-        
-        <div class="toggle-container">
-          <button id="toggle-slice-corp" class="toggle-btn active">Group by Corp</button>
-          <button id="toggle-slice-dept" class="toggle-btn">Group by Dept</button>
-        </div>
-      </div>
 
-      <div class="pies-grid" id="ranges-pies-container">
-        <!-- Range 0-10 -->
-        <div class="glass-card pie-card" id="card-range-0-10">
-          <div class="pie-card-header">
-            <span class="pie-card-title">🟢 Range 0-10 Mandays</span>
-            <span class="pie-card-badge" id="badge-range-0-10">0 Employees</span>
-          </div>
-          <div class="chart-container-donut">
-            <canvas id="chart-range-0-10"></canvas>
-          </div>
-        </div>
 
-        <!-- Range 10-20 -->
-        <div class="glass-card pie-card" id="card-range-10-20">
-          <div class="pie-card-header">
-            <span class="pie-card-title">🔵 Range 10-20 Mandays</span>
-            <span class="pie-card-badge" id="badge-range-10-20">0 Employees</span>
-          </div>
-          <div class="chart-container-donut">
-            <canvas id="chart-range-10-20"></canvas>
-          </div>
-        </div>
-
-        <!-- Range 20-30 -->
-        <div class="glass-card pie-card" id="card-range-20-30">
-          <div class="pie-card-header">
-            <span class="pie-card-title">🟡 Range 20-30 Mandays</span>
-            <span class="pie-card-badge" id="badge-range-20-30">0 Employees</span>
-          </div>
-          <div class="chart-container-donut">
-            <canvas id="chart-range-20-30"></canvas>
-          </div>
-        </div>
-
-        <!-- Range 30-40 -->
-        <div class="glass-card pie-card" id="card-range-30-40">
-          <div class="pie-card-header">
-            <span class="pie-card-title">🟠 Range 30-40 Mandays</span>
-            <span class="pie-card-badge" id="badge-range-30-40">0 Employees</span>
-          </div>
-          <div class="chart-container-donut">
-            <canvas id="chart-range-30-40"></canvas>
-          </div>
-        </div>
-
-        <!-- Range 40-50 -->
-        <div class="glass-card pie-card" id="card-range-40-50">
-          <div class="pie-card-header">
-            <span class="pie-card-title">🔴 Range 40-50 Mandays</span>
-            <span class="pie-card-badge" id="badge-range-40-50">0 Employees</span>
-          </div>
-          <div class="chart-container-donut">
-            <canvas id="chart-range-40-50"></canvas>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Middle Row containing Leadership Track and secondary segments -->
+    <!-- Middle Row containing SAP User Group Explorer and secondary segments -->
     <div class="dashboard-middle-row">
-      <!-- Leadership Track (65% width) -->
+      <!-- SAP User Group Explorer (65% width) -->
       <section class="glass-card table-card" style="margin-top: 0;">
         <div class="card-header" style="align-items: center; border-bottom: none; margin-bottom: 0.5rem;">
           <div>
-            <h2>Leadership Track</h2>
-            <div class="card-subtitle">Course enrolment details. Select a course to see participants.</div>
+            <h2>SAP User Group Explorer</h2>
+            <div class="card-subtitle">User group details. Select a group to see users.</div>
           </div>
           <div class="filter-group">
-            <label for="filter-leadership-cat">Category</label>
+            <label for="filter-explorer-license">License</label>
             <div class="select-wrapper">
-              <select id="filter-leadership-cat">
-                <option value="ALL">All Categories</option>
+              <select id="filter-explorer-license">
+                <option value="ALL">All Licenses</option>
               </select>
             </div>
           </div>
         </div>
-        
+
         <div class="leadership-split">
           <!-- Course buttons -->
           <div class="leadership-left">
-            <div id="course-buttons-container" class="course-buttons-grid">
+            <div id="group-buttons-container" class="group-buttons-grid">
               <!-- Dynamically populated course buttons -->
             </div>
+            <!-- Group Pagination Controls -->
+            <div id="group-pagination-controls" class="pagination" style="margin-top: 1rem; justify-content: center; gap: 1rem; display: flex;" data-html2canvas-ignore="true">
+              <button id="btn-prev-groups" class="pagination-btn" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" disabled>Previous</button>
+              <span id="group-page-info" style="font-size: 0.8rem;">Page 1 of 1</span>
+              <button id="btn-next-groups" class="pagination-btn" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" disabled>Next</button>
+            </div>
           </div>
-          
+
           <!-- Enrolled employees list -->
-          <div class="leadership-right glass-card" style="padding: 1rem; background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.04); min-height: 250px;">
+          <div class="leadership-right glass-card"
+            style="padding: 1rem; background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.04); min-height: 250px;">
             <div style="margin-bottom: 0.75rem;">
-              <h3 id="selected-course-title" style="font-family: var(--font-heading); font-size: 1rem; font-weight: 600;">Enrolled Employees</h3>
-              <div id="selected-course-subtitle" class="card-subtitle" style="font-size: 0.75rem;">Select a course to view details</div>
+              <h3 id="selected-group-title"
+                style="font-family: var(--font-heading); font-size: 1rem; font-weight: 600;">Assigned Users</h3>
+              <div id="selected-group-subtitle" class="card-subtitle" style="font-size: 0.75rem;">Select a group to view details</div>
             </div>
             <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
               <table>
                 <thead>
                   <tr style="background-color: #1e293b;">
-                    <th style="padding: 0.5rem 0.75rem; font-size: 0.75rem;">Employee Name</th>
-                    <th style="padding: 0.5rem 0.75rem; font-size: 0.75rem;">Corp/Plant</th>
+                    <th style="padding: 0.5rem 0.75rem; font-size: 0.75rem;">User Name</th>
+                    <th style="padding: 0.5rem 0.75rem; font-size: 0.75rem;">License</th>
                     <th style="padding: 0.5rem 0.75rem; font-size: 0.75rem;">Department</th>
                   </tr>
                 </thead>
-                <tbody id="leadership-employees-body">
+                <tbody id="explorer-users-body">
                   <tr>
-                    <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0; font-size: 0.8rem;">
-                      No course selected
+                    <td colspan="3"
+                      style="text-align: center; color: var(--text-muted); padding: 1.5rem 0; font-size: 0.8rem;">
+                      No group selected
                     </td>
                   </tr>
                 </tbody>
@@ -275,34 +205,15 @@
         </div>
       </section>
 
-      <!-- Right Column containing Business Excellence and Category Progress (35% width) -->
+      <!-- Right Column containing Category Progress (35% width) -->
       <div class="dashboard-right-column">
-        <!-- Business Excellence & TQM -->
-        <section class="glass-card table-card" style="padding: 1rem; margin-top: 0;">
-          <div class="card-header" style="border-bottom: none; margin-bottom: 0.5rem; padding-bottom: 0;">
-            <div>
-              <h2 style="font-size: 1.1rem;">Business Excellence &amp; TQM</h2>
-              <div class="card-subtitle" style="font-size: 0.75rem;">Training mandays targets vs completions</div>
-            </div>
-          </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-            <div class="tqm-card">
-              <span class="tqm-label">Plan</span>
-              <span class="tqm-value" id="tqm-plan-val">200</span>
-            </div>
-            <div class="tqm-card completions">
-              <span class="tqm-label">Actual</span>
-              <span class="tqm-value" id="tqm-actual-val">0</span>
-            </div>
-          </div>
-        </section>
-
         <!-- Category Progress -->
-        <section class="glass-card table-card" style="padding: 1rem; margin-top: 0; flex: 1; display: flex; flex-direction: column;">
+        <section class="glass-card table-card"
+          style="padding: 1rem; margin-top: 0; flex: 1; display: flex; flex-direction: column;">
           <div class="card-header" style="border-bottom: none; margin-bottom: 0.5rem; padding-bottom: 0;">
             <div>
-              <h2 style="font-size: 1.1rem;">Category Progress</h2>
-              <div class="card-subtitle" style="font-size: 0.75rem;">Unique persons count per category</div>
+              <h2 style="font-size: 1.1rem;">License Distribution Progress</h2>
+              <div class="card-subtitle" style="font-size: 0.75rem;">Unique users count per license type</div>
             </div>
           </div>
           <div id="category-progress-container" class="category-progress-grid">
@@ -312,138 +223,147 @@
       </div>
     </div>
 
-  <!-- Footer Component -->
-  <footer class="dashboard-footer">
-    <div class="footer-left">
-      <span class="app-version">SkillTrack Analyzer v1.0.0</span>
-      <span class="divider">|</span>
-      <a href="#" id="link-user-manual" class="footer-link">📖 User Manual (PDF)</a>
-      <span class="divider">|</span>
-      <a href="#" id="link-privacy-policy" class="footer-link">🔒 Privacy Policy</a>
-      <span class="divider">|</span>
-      <a href="#" id="link-licenses" class="footer-link">📄 Licenses</a>
-    </div>
-    <div class="footer-right">
-      <button id="btn-export-config" class="footer-btn">📥 Export Config</button>
-      <button id="btn-import-config" class="footer-btn">📤 Import Config</button>
-      <input type="file" id="import-config-file" accept=".json" class="hidden">
-      <button id="btn-view-logs" class="footer-btn secondary">🪵 Error Logs</button>
-    </div>
-  </footer>
-</div>
-
-<!-- Interactive Drilldown Modal -->
-<div class="modal-overlay" id="drilldown-modal">
-  <div class="modal-container">
-    <div class="modal-header">
-      <div class="modal-title-area">
-        <h3 id="modal-title">Employee Details</h3>
-        <p id="modal-subtitle">Sub-breakdown of filtered employees</p>
+    <!-- Footer Component -->
+    <footer class="dashboard-footer" data-html2canvas-ignore="true">
+      <div class="footer-left">
+        <span class="app-version">SAPID License Analyzer v1.0.0</span>
+        <span class="divider">|</span>
+        <a href="#" id="link-user-manual" class="footer-link">📖 User Manual (PDF)</a>
+        <span class="divider">|</span>
+        <a href="#" id="link-privacy-policy" class="footer-link">🔒 Privacy Policy</a>
+        <span class="divider">|</span>
+        <a href="#" id="link-licenses" class="footer-link">📄 Licenses</a>
       </div>
-      <button class="modal-close-btn" id="modal-close-btn">&times;</button>
-    </div>
-    <div class="modal-content-area">
-      <div class="table-responsive">
-        <table>
-          <thead>
-            <tr style="background-color: #111827;">
-              <th style="padding: 0.75rem 1rem;">Sno</th>
-              <th style="padding: 0.75rem 1rem;">Employee ID</th>
-              <th style="padding: 0.75rem 1rem;">Name</th>
-              <th style="padding: 0.75rem 1rem;">Designation</th>
-              <th style="padding: 0.75rem 1rem;">Department</th>
-              <th style="padding: 0.75rem 1rem;">Corp/Plant</th>
-              <th style="padding: 0.75rem 1rem;">Category</th>
-              <th style="padding: 0.75rem 1rem;">Course Name</th>
-              <th style="padding: 0.75rem 1rem;">From Date</th>
-              <th style="padding: 0.75rem 1rem;">To Date</th>
-              <th style="padding: 0.75rem 1rem;">Organiser</th>
-              <th style="padding: 0.75rem 1rem; text-align: right;">Mandays</th>
-              <th style="padding: 0.75rem 1rem; text-align: center;">Attended</th>
-            </tr>
-          </thead>
-          <tbody id="modal-table-body">
-            <!-- Populated when slice clicked -->
-          </tbody>
-        </table>
+      <div class="footer-right">
+        <button id="btn-download-pdf" class="footer-btn">📸 Capture PDF</button>
+        <button id="btn-export-config" class="footer-btn">📥 Export Config</button>
+        <button id="btn-import-config" class="footer-btn">📤 Import Config</button>
+        <input type="file" id="import-config-file" accept=".json" class="hidden">
+        <button id="btn-view-logs" class="footer-btn secondary">🪵 Error Logs</button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Interactive Drilldown Modal -->
+  <div class="modal-overlay" id="drilldown-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title-area">
+          <h3 id="modal-title">User Details</h3>
+          <p id="modal-subtitle">Sub-breakdown of filtered users</p>
+        </div>
+        <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-content-area">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr style="background-color: #111827;">
+                <th style="padding: 0.75rem 1rem;">SAPID</th>
+                <th style="padding: 0.75rem 1rem;">Name</th>
+                <th style="padding: 0.75rem 1rem;">License</th>
+                <th style="padding: 0.75rem 1rem;">Department</th>
+                <th style="padding: 0.75rem 1rem;">Function</th>
+                <th style="padding: 0.75rem 1rem;">Last Logon</th>
+                <th style="padding: 0.75rem 1rem;">Group</th>
+              </tr>
+            </thead>
+            <tbody id="modal-table-body">
+              <!-- Populated when slice clicked -->
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Privacy Policy Modal -->
-<div class="modal-overlay" id="privacy-modal">
-  <div class="modal-container modal-small">
-    <div class="modal-header">
-      <div class="modal-title-area">
-        <h3>Privacy Policy</h3>
-        <p>SkillTrack Analyzer Data Protection</p>
+  <!-- Privacy Policy Modal -->
+  <div class="modal-overlay" id="privacy-modal">
+    <div class="modal-container modal-small">
+      <div class="modal-header">
+        <div class="modal-title-area">
+          <h3>Privacy Policy</h3>
+          <p>SAPID License Analyzer Data Protection</p>
+        </div>
+        <button class="modal-close-btn" id="btn-close-privacy">&times;</button>
       </div>
-      <button class="modal-close-btn" id="btn-close-privacy">&times;</button>
-    </div>
-    <div class="modal-content-area text-content">
-      <h4>1. Local-First Architecture</h4>
-      <p>SkillTrack Analyzer is designed to be a local-first application. All processes run locally on your system. None of your data, sheet configurations, or uploaded spreadsheets are sent to external trackers or analytics servers.</p>
-      
-      <h4>2. Google Sheets & Apps Script Sync</h4>
-      <p>When syncing with Google Sheets, the application communicates directly with Google servers. For domain-restricted links, the communication happens entirely within your local webview using your current active Google Workspace session. No credentials or sheet data are stored or routed through intermediate APIs.</p>
+      <div class="modal-content-area text-content">
+        <h4>1. Local-First Architecture</h4>
+        <p>SAPID License Analyzer is designed to be a local-first application. All processes run locally on your system.
+          None of your data, sheet configurations, or uploaded spreadsheets are sent to external trackers or analytics
+          servers.</p>
 
-      <h4>3. Local Configuration Storage</h4>
-      <p>Sync URLs and cached spreadsheet rows are saved in your local webview's <code>localStorage</code> database to persist your dashboard state. This data is stored strictly on your device.</p>
+        <h4>2. Google Sheets & Apps Script Sync</h4>
+        <p>When syncing with Google Sheets, the application communicates directly with Google servers. For
+          domain-restricted links, the communication happens entirely within your local webview using your current
+          active Google Workspace session. No credentials or sheet data are stored or routed through intermediate APIs.
+        </p>
 
-      <h4>4. Error Logging</h4>
-      <p>Application runtime error logs are written to your local file system under the application's local log directory to assist in diagnostics. These logs never leave your machine.</p>
+        <h4>3. Local Configuration Storage</h4>
+        <p>Sync URLs and cached spreadsheet rows are saved in your local webview's <code>localStorage</code> database to
+          persist your dashboard state. This data is stored strictly on your device.</p>
+
+        <h4>4. Error Logging</h4>
+        <p>Application runtime error logs are written to your local file system under the application's local log
+          directory to assist in diagnostics. These logs never leave your machine.</p>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Third-Party Licenses Modal -->
-<div class="modal-overlay" id="licenses-modal">
-  <div class="modal-container modal-small">
-    <div class="modal-header">
-      <div class="modal-title-area">
-        <h3>Third-Party Licenses</h3>
-        <p>Open-source software used in SkillTrack Analyzer</p>
+  <!-- Third-Party Licenses Modal -->
+  <div class="modal-overlay" id="licenses-modal">
+    <div class="modal-container modal-small">
+      <div class="modal-header">
+        <div class="modal-title-area">
+          <h3>Third-Party Licenses</h3>
+          <p>Open-source software used in SAPID License Analyzer</p>
+        </div>
+        <button class="modal-close-btn" id="btn-close-licenses">&times;</button>
       </div>
-      <button class="modal-close-btn" id="btn-close-licenses">&times;</button>
-    </div>
-    <div class="modal-content-area text-content">
-      <p>SkillTrack Analyzer is built using the following open-source libraries:</p>
-      <ul>
-        <li><strong>Tauri Framework</strong> (MIT License) - Cross-platform GUI framework.</li>
-        <li><strong>Chart.js</strong> (MIT License) - Beautiful dashboard charting.</li>
-        <li><strong>SheetJS (xlsx)</strong> (Apache 2.0 / MIT) - Client-side Excel parser.</li>
-        <li><strong>Reqwest & Tokio</strong> (MIT License) - Rust network utilities.</li>
-        <li><strong>Serde & Serde JSON</strong> (MIT / Apache 2.0) - Rust serialization framework.</li>
-        <li><strong>Chrono</strong> (MIT / Apache 2.0) - Rust date/time library.</li>
-        <li><strong>PDFKit</strong> (MIT License) - User manual PDF compiler.</li>
-      </ul>
-      <p>For more detailed information, please review the <code>LICENSE-THIRD-PARTY.md</code> file in the application directory.</p>
+      <div class="modal-content-area text-content">
+        <p>SAPID License Analyzer is built using the following open-source libraries:</p>
+        <ul>
+          <li><strong>Tauri Framework</strong> (MIT License) - Cross-platform GUI framework.</li>
+          <li><strong>Chart.js</strong> (MIT License) - Beautiful dashboard charting.</li>
+          <li><strong>SheetJS (xlsx)</strong> (Apache 2.0 / MIT) - Client-side Excel parser.</li>
+          <li><strong>Reqwest & Tokio</strong> (MIT License) - Rust network utilities.</li>
+          <li><strong>Serde & Serde JSON</strong> (MIT / Apache 2.0) - Rust serialization framework.</li>
+          <li><strong>Chrono</strong> (MIT / Apache 2.0) - Rust date/time library.</li>
+          <li><strong>PDFKit</strong> (MIT License) - User manual PDF compiler.</li>
+        </ul>
+        <p>For more detailed information, please review the <code>LICENSE-THIRD-PARTY.md</code> file in the application
+          directory.</p>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Local Error Logs Modal -->
-<div class="modal-overlay" id="logs-modal">
-  <div class="modal-container">
-    <div class="modal-header">
-      <div class="modal-title-area">
-        <h3>Local Error Logs</h3>
-        <p>Recent diagnostic logs generated by the system</p>
+  <!-- Local Error Logs Modal -->
+  <div class="modal-overlay" id="logs-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title-area">
+          <h3>Local Error Logs</h3>
+          <p>Recent diagnostic logs generated by the system</p>
+        </div>
+        <button class="modal-close-btn" id="btn-close-logs">&times;</button>
       </div>
-      <button class="modal-close-btn" id="btn-close-logs">&times;</button>
-    </div>
-    <div class="modal-content-area">
-      <pre id="log-content-area" class="log-viewer-pre">Loading logs...</pre>
-    </div>
-    <div class="modal-footer-actions" style="display: flex; gap: 1rem; justify-content: flex-end; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08);">
-      <button id="btn-open-logs-folder" class="footer-btn">📂 Open Logs Folder</button>
-      <button id="btn-clear-logs" class="footer-btn secondary" style="background: rgba(244, 63, 94, 0.1); color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.2);">🗑️ Clear Logs</button>
+      <div class="modal-content-area">
+        <pre id="log-content-area" class="log-viewer-pre">Loading logs...</pre>
+      </div>
+      <div class="modal-footer-actions"
+        style="display: flex; gap: 1rem; justify-content: flex-end; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08);">
+        <button id="btn-open-logs-folder" class="footer-btn">📂 Open Logs Folder</button>
+        <button id="btn-clear-logs" class="footer-btn secondary"
+          style="background: rgba(244, 63, 94, 0.1); color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.2);">🗑️
+          Clear Logs</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Load application logic -->
-<script src="app.js?v=4"></script>
+  <!-- Load preloaded SAP user data first -->
+  <script src="preloaded_data.js"></script>
+  <!-- Load application logic -->
+  <script src="app.js?v=4"></script>
 </body>
+
 </html>

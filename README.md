@@ -1,47 +1,47 @@
-# Mandays Training Analytics Dashboard
+# SAP User License Analyzer
 
-An interactive, premium, dark-mode web application designed to visualize, filter, and drill down into employee training mandays. The dashboard is built with **modern glassmorphic aesthetics** and updates dynamically by fetching real-time data directly from a **Google Sheet** (or Google Apps Script Web App) at runtime, with fallback support for offline local file uploads.
+An interactive, premium, dark-mode cross-platform desktop application designed to visualize, filter, and analyze SAP user licensing distributions and logon recency activity. The dashboard is built with **modern glassmorphic aesthetics** and updates dynamically by fetching real-time data directly from a **Google Sheet** (or Google Apps Script Web App) at runtime, with offline support for local Excel uploads.
 
 ---
 
 ## Key Features
 
 ### 1. Live Google Sheets Integration & Sync
-- **Dynamic Fetching**: Automatically fetches live data on page load using the browser's native `fetch()` API.
-- **Header URL Sync Bar**: Paste any public Google Sheet link (or published web link) directly into the header sync input box and press **Sync** to instantly refresh the dashboard.
-- **Sticky Settings**: Successfully loaded URLs are stored in `localStorage`, meaning the dashboard remembers your preferred data sheet across browser refreshes.
-- **Safe Fallbacks**: If the fetch fails (due to offline states or network boundaries), the uploader remains ready for local files.
+- **Dynamic Fetching**: Automatically fetches live data on page load.
+- **Header URL Sync Bar**: Paste any public Google Sheet link (or Apps Script Web App link) directly into the header sync input box and click **Sync** to instantly refresh the dashboard.
+- **Persistent Settings**: Successfully synced URLs are cached in `localStorage` to persist across launches.
+- **Offline Fallbacks**: If the fetch fails, local file uploads remain available.
 
-### 2. Google Apps Script Web App Support (For Restricted Domains)
+### 2. Google Apps Script Web App Support (For Private Domains)
 - Built-in support for private/restricted organization domains (such as enterprise Google Workspace accounts).
 - Detects Google Apps Script Web App links and automatically converts 2D array matrix responses (`[[headers], [row1], [row2]]`) into the correct object ledger format dynamically.
 
-### 3. Dynamic Range Auto-Scaling (Pie Charts)
-- Aggregates employee training mandays across all rows and distributes them into **5 range-analysis donut charts**.
-- **Auto-Scaling**: Automatically detects if employee mandays totals are small (<= 50) or large (> 50) and scales the chart intervals accordingly (e.g., automatically shifting to `0-50, 50-100, ..., 200-250` intervals for larger sheets), ensuring **100% of employees are captured and visualised**.
-- **Slice Click Drilldown**: Clicking any pie/donut slice opens an interactive detailed modal showing the **entire row (all 13 columns)** of all matching Excel rows, **sorted by department**.
+### 3. Logon Recency Analysis
+- Aggregates user last logon dates relative to the benchmark date (`June 2, 2026`) and distributes them into **5 range-analysis donut charts**: Active (0-30 days), Recent (31-60 days), Inactive (61-90 days), Long Inactive (91-120 days), and Dormant (120+ days).
+- **Slice Click Drilldown**: Clicking any pie/donut slice opens an interactive detailed modal showing the **entire profile details** of matching users (SAPID, Name, License, Department, Function, Last Logon, Group), sorted by department.
+- **Toggle Grouping**: Instantly toggle slices to group users by either SAP License or Department.
 
-### 4. Split-Row Leadership Track
-- Dedicated split section taking up the left-to-middle layout space (60-65% width) side-by-side with secondary widgets.
-- **Left Side**: Dynamic course buttons showing unique counts of enrolled participants.
-- **Right Side**: Renders the participant ledger (Employee Name, Corp/Plant, Department) for the selected course, **sorted by department**. Clicking any row pops up the **entire raw row (all 13 columns)** of details, sorted by department.
+### 4. SAP User Group Explorer
+- Dedicated functional group explorer taking up the left-to-middle layout space (60-65% width) side-by-side with secondary widgets.
+- **Left Side**: Dynamic group buttons showing unique counts of assigned users.
+- **Right Side**: Renders the assigned user list (User Name, License, Department) for the selected group, **sorted by department**. Clicking any row pops up the **entire raw profile** of details.
 
 ### 5. Secondary Column Analytics (Right Side)
-- **Business Excellence & TQM**: Target Plan (200 mandays) vs. dynamically computed completions Actuals (sum of mandays for rows with `attended === 'Yes'`) with counting animations.
-- **Category Progress**: Dynamically lists unique person counts per training category with count-up micro-animations.
+- **Logon Activity Target**: Plan target (100 users) vs. dynamically computed completions Actuals (sum of active users with logon within 30 days) with counting animations.
+- **License Distribution Progress**: Dynamically lists unique user counts per license type (AX, AY, FX, HC, HD) with count-up micro-animations.
 
-### 6. Searchable & Sortable Employee Ledger
-- Lists all employees with their plant, department, and aggregated metrics.
-- Default-sorted by **Department**.
-- Support for text searches (by Name or Employee ID) and pagination control.
+### 6. Searchable & Sortable SAP User Ledger
+- Lists all users with their SAPID, User Name, License, Department, User Group, and Last Logon.
+- Support for text searches (by Name or SAPID) and pagination control.
 
 ### 7. Drag-and-Drop Local File Uploader
-- Allows users to drag and drop or select local `.xlsx` or `.csv` files to render metrics fully client-side inside the browser memory.
+- Allows users to drag and drop or select local `.xlsx` or `.xls` files to render metrics fully client-side inside the browser memory.
 
 ---
 
 ## Technical Stack & Libraries
-- **Structure & Logic**: HTML5, Vanilla JavaScript (ES6)
+- **Desktop Wrapper**: [Tauri v2](https://tauri.app/) (Rust-backed cross-platform native wrapper)
+- **Frontend Core**: HTML5, Vanilla JavaScript (ES6)
 - **Styles**: Vanilla CSS3 (Custom animations, glassmorphism, responsive grids down to `992px` screen width)
 - **Chart Visualizations**: [Chart.js](https://www.chartjs.org/)
 - **Spreadsheet Parsing**: [SheetJS (XLSX)](https://sheetjs.com/)
@@ -51,12 +51,11 @@ An interactive, premium, dark-mode web application designed to visualize, filter
 ## Getting Started
 
 ### Local Development
-To run this project locally, start a lightweight web server inside this directory:
+To run this project locally, start a lightweight web server inside this directory or run Tauri dev:
 ```bash
-# Using http-server
-npx http-server -p 8080
+# Start Tauri development environment
+npm run tauri dev
 ```
-Open **[http://localhost:8080](http://localhost:8080)** in your default browser.
 
 ---
 
@@ -84,9 +83,9 @@ If your organization restricts external sharing, you can fetch data securely by 
 3. Click **Deploy** -> **New Deployment**.
 4. Set "Select type" to **Web app**.
 5. Configure the deployment settings:
-   - **Description**: Training Dashboard Fetcher
+   - **Description**: SAP License Dashboard Fetcher
    - **Execute as**: Me (your email)
    - **Who has access**: Anyone (this lets the client-side JavaScript request data without a login prompt)
 6. Click **Deploy**.
 7. Copy the generated **Web App URL** (the link ending in `/exec`).
-8. Paste that URL directly into the dashboard's URL Sync input box and click 
+8. Paste that URL directly into the dashboard's URL Sync input box and click **Sync**.

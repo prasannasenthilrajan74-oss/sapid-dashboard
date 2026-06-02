@@ -1,18 +1,19 @@
-# SkillTrack Analyzer User Manual
+# SAP User License Analyzer User Manual
 
-Welcome to **SkillTrack Analyzer**, an interactive, dark-mode desktop dashboard designed to visualize, filter, and drill down into employee training mandays and course enrolments.
+Welcome to **SAPID License Analyzer**, an interactive, dark-mode desktop dashboard designed to visualize, filter, and analyze SAP user licensing distributions and purchased progress.
 
 ---
 
 ## Table of Contents
 1. [Connecting a Standard Google Sheet](#1-connecting-a-standard-google-sheet)
 2. [Connecting an Enterprise Google Sheet (Apps Script)](#2-connecting-an-enterprise-google-sheet-apps-script)
-3. [Uploading Local Excel/CSV Files](#3-uploading-local-excelcsv-files)
+3. [Uploading Local Excel Files](#3-uploading-local-excel-files)
 4. [Using Dashboard Metrics and Filters](#4-using-dashboard-metrics-and-filters)
-5. [Understanding Dynamic Range Auto-Scaling](#5-understanding-dynamic-range-auto-scaling)
-6. [Navigating the Employee Ledger](#6-navigating-the-employee-ledger)
-7. [Exporting and Importing Configurations](#7-exporting-and-importing-configurations)
-8. [Reviewing Error Logs](#8-reviewing-error-logs)
+5. [License Distribution Progress & Purchased Quotas](#5-license-distribution-progress--purchased-quotas)
+6. [SAP User Group Explorer](#6-sap-user-group-explorer)
+7. [Navigating the SAP User Ledger](#7-navigating-the-sap-user-ledger)
+8. [Exporting and Importing Configurations](#8-exporting-and-importing-configurations)
+9. [Reviewing Error Logs](#9-reviewing-error-logs)
 
 ---
 
@@ -23,6 +24,8 @@ If your spreadsheet is publicly shared or viewable by anyone with the link:
 3. Copy the URL from the browser address bar.
 4. Paste the URL into the **Google Sheets Link...** input box in the header sync bar.
 5. Click **Sync** (or press Enter). The dashboard will reload and visualize the active sheet data.
+
+*Note: The sheet must follow the SAP License schema with columns: SAPID, Name, License, Department, Function, Last Logon, and Group.*
 
 ---
 
@@ -48,44 +51,54 @@ For enterprise domains that restrict public link sharing, configure a Google App
 
 ---
 
-## 3. Uploading Local Excel/CSV Files
-To work entirely offline without setting up any cloud links:
-1. Drag and drop your `.xlsx` or `.csv` spreadsheet file onto the **Upload Excel Sheet** area in the top-right header, or click the area to choose a file via the system dialog.
+## 3. Uploading Local Excel Files
+To work entirely offline without cloud links:
+1. Drag and drop your `.xlsx` or `.xls` spreadsheet file onto the **Upload Excel Sheet** area in the top-right header, or click the area to choose a file via the system dialog.
 2. The application will parse the binary file in browser memory.
-3. Once loaded, a **Reset to Default Data** button will appear in the sync bar, allowing you to return to the default cloud data at any time.
+3. Once loaded, a **Reset to Default Data** button will appear in the sync bar, allowing you to return to the preloaded 500-user SAP dataset.
 
 ---
 
 ## 4. Using Dashboard Metrics and Filters
-- **KPI Summary Cards**: Total Mandays, Total Unique Employees, Avg Mandays per Employee, and Top Plant are calculated dynamically.
-- **Interactive Filters**: Refine the metrics by Plant, Department, or Course Attendance using the dropdown panels. All KPI cards and visualizations will transition instantly.
-- **Split-Row Leadership Track**: Select any course from the button grid on the left. The participant ledger on the right will update to list enrolled participants sorted by department. Click any row in the ledger to view the raw 13-column record.
+- **KPI Summary Cards**:
+  - **Total Users**: Counts the total allocated users matching current active filters.
+  - **Total Purchased**: The sum of all purchased license quotas originally bought from the head office.
+  - **Available Licenses**: Remaining available licenses (Total Purchased - Total Allocated Users).
+  - **Top License Type**: License ID (AX, AY, FX, HC, HD) representing the largest share.
+- **Interactive Filters**: Refine the metrics by License ID or Department. All users are treated as active.
 
 ---
 
-## 5. Understanding Dynamic Range Auto-Scaling
-The range donut charts aggregate employee training mandays and segment them into intervals:
-- **Auto-Scaling**: If employee mandays totals are small (<= 50) or large (> 50), the intervals adjust automatically (e.g. scaling to `0-50`, `50-100`... up to `200-250` for large totals). This prevents chart compression and ensures all employees are accounted for.
-- **Slice Click Drilldown**: Click any color slice on any range chart to open a modal view showing the complete spreadsheet entries for matching employees.
+## 5. License Distribution Progress & Purchased Quotas
+The right column displays the allocation progress for each license type:
+- **Editable Purchased Quotas**: Every progress card features an inline **Limit** input field. You can directly edit the total purchased license quota originally bought from the head office.
+- **Recalculations**: Modifying a limit instantly updates the **Total Purchased** and **Available Licenses** KPI cards and recalculates the progress bar percentage.
+- **Persistence**: Your edited limits are automatically persisted locally in `localStorage` under `sap_license_purchased_[licName]`, meaning your custom numbers remain intact across application sessions.
 
 ---
 
-## 6. Navigating the Employee Ledger
+## 6. SAP User Group Explorer
+Select any SAP functional group from the button grid on the left. The assigned users ledger on the right will update to list unique enrolled users sorted by department. Click any row in the ledger to view the raw record details.
+
+---
+
+## 7. Navigating the SAP User Ledger
 Click **Employee Ledger** in the navigation bar to view the database:
-- **Search bar**: Search for employees by Name or Employee ID.
-- **Sorting**: Click any column header (Employee ID, Name, Total Mandays, etc.) to toggle ascending or descending sorting.
-- **Drilldown**: Click any row in the ledger to display a chronological modal history of all training courses that employee attended.
+- **Search bar**: Search for users by Name or SAPID.
+- **Filters**: Filter list by License ID or Department.
+- **Sorting**: Click any column header (SAPID, User Name, License, Department, User Group, Last Logon) to toggle sorting.
+- **Detail Drilldown**: Click any row in the ledger to display a detail modal of that user's profile.
 
 ---
 
-## 7. Exporting and Importing Configurations
+## 8. Exporting and Importing Configurations
 You can back up or transfer your active dashboard URL and configurations:
-- **Export Config**: Click **Export Config** in the footer. This generates a `skilltrack_config_[date].json` file containing your saved sheet URL and cached data.
+- **Export Config**: Click **Export Config** in the footer. This generates a `sap_license_config_[date].json` file containing your saved sheet URL and cached data.
 - **Import Config**: Click **Import Config** and select a previously exported `.json` file to restore the configuration instantly.
 
 ---
 
-## 8. Reviewing Error Logs
+## 9. Reviewing Error Logs
 If a sync fails or data fails to parse, the system writes a diagnostic log entry:
 - Click **Error Logs** in the footer to review recent log messages.
 - Click **Open Logs Folder** to open your native OS folder explorer containing the `error.log` file.

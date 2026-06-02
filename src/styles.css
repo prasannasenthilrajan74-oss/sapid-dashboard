@@ -620,7 +620,7 @@ tr:hover td {
 }
 
 /* Table badges */
-.badge-plant {
+.badge-license {
   background: rgba(99, 102, 241, 0.15);
   color: #a5b4fc;
   padding: 0.2rem 0.5rem;
@@ -836,13 +836,13 @@ tr:hover td {
   }
 }
 
-.course-buttons-grid {
+.group-buttons-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 0.75rem;
 }
 
-.course-card-btn {
+.group-card-btn {
   background: rgba(30, 41, 59, 0.45);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md);
@@ -858,20 +858,20 @@ tr:hover td {
   user-select: none;
 }
 
-.course-card-btn:hover {
+.group-card-btn:hover {
   background: var(--card-bg-hover);
   border-color: var(--accent-blue);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
 }
 
-.course-card-btn.active {
+.group-card-btn.active {
   background: rgba(14, 165, 233, 0.12);
   border-color: var(--accent-blue);
   box-shadow: 0 0 15px rgba(14, 165, 233, 0.25), inset 0 0 8px rgba(14, 165, 233, 0.1);
 }
 
-.course-btn-title {
+.group-btn-title {
   font-family: var(--font-heading);
   font-size: 0.8rem;
   font-weight: 600;
@@ -879,7 +879,7 @@ tr:hover td {
   line-height: 1.2;
 }
 
-.course-btn-value {
+.group-btn-value {
   font-family: var(--font-heading);
   font-size: 2rem;
   font-weight: 800;
@@ -888,11 +888,11 @@ tr:hover td {
   text-shadow: 0 0 10px rgba(14, 165, 233, 0.3);
 }
 
-.course-card-btn.active .course-btn-title {
+.group-card-btn.active .group-btn-title {
   color: #fff;
 }
 
-.course-card-btn.active .course-btn-value {
+.group-card-btn.active .group-btn-value {
   color: #fff;
   text-shadow: 0 0 15px var(--accent-blue);
 }
@@ -1623,5 +1623,100 @@ tr:hover td {
 .toast-icon {
   font-size: 1.1rem;
 }
+
+/* Premium License Progress Card Styling */
+.category-progress-card {
+  background: rgba(30, 41, 59, 0.45);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: var(--transition-normal);
+}
+
+.category-progress-card:hover {
+  border-color: var(--border-color-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.1);
+}
+
+.cat-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.cat-progress-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.cat-progress-name {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.cat-progress-details {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.cat-progress-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cat-progress-input-wrapper label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.limit-input {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-primary);
+  padding: 0.35rem 0.5rem;
+  width: 75px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  outline: none;
+  transition: var(--transition-fast);
+}
+
+.limit-input:focus {
+  border-color: var(--accent-blue);
+  background: rgba(15, 23, 42, 0.9);
+  box-shadow: 0 0 8px rgba(14, 165, 233, 0.25);
+}
+
+.cat-progress-bar-track {
+  background: rgba(15, 23, 42, 0.8);
+  height: 6px;
+  border-radius: 3px;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.cat-progress-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease-out;
+}
+
 
 

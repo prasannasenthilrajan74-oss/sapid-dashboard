@@ -63,6 +63,31 @@ function isAllowedGoogleDataUrl(urlValue) {
   }
 }
 
+// Returns the sheet name matching priority keywords (case-insensitive, trimmed), falling back to the first sheet.
+function getBestSheetName(workbook) {
+  if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+    return null;
+  }
+  const targets = [
+    'live users',
+    'live user',
+    'acctive user',
+    'active user',
+    'sapidinfo',
+    'sapid info',
+    'sapid',
+    'total id'
+  ];
+  for (const target of targets) {
+    const matched = workbook.SheetNames.find(name => {
+      if (typeof name !== 'string') return false;
+      return name.trim().toLowerCase() === target.toLowerCase();
+    });
+    if (matched) return matched;
+  }
+  return workbook.SheetNames[0];
+}
+
 // Show a premium glassmorphic toast notification
 function showToast(message, type = 'success') {
   let container = document.getElementById('toast-container');
@@ -71,21 +96,21 @@ function showToast(message, type = 'success') {
     container.id = 'toast-container';
     document.body.appendChild(container);
   }
-  
+
   const toast = document.createElement('div');
   toast.className = `toast-notification ${type}`;
   toast.innerHTML = `
     <span class="toast-icon">${type === 'success' ? '✅' : '❌'}</span>
     <span class="toast-message">${escapeHTML(message)}</span>
   `;
-  
+
   container.appendChild(toast);
-  
+
   // Trigger transition
   setTimeout(() => {
     toast.classList.add('show');
   }, 10);
-  
+
   // Auto-remove after 3 seconds
   setTimeout(() => {
     toast.classList.remove('show');
@@ -99,58 +124,73 @@ function showToast(message, type = 'success') {
 let rawData = [];
 let employeesList = []; // Aggregated employees list
 let currentFilters = {
-  corp: 'ALL',
+  license: 'ALL',
   dept: 'ALL',
   search: ''
 };
 
 // Table State
-let tableSortColumn = 'id'; // Default sort by Employee ID
+let tableSortColumn = 'sapid'; // Default sort by SAPID
 let tableSortDirection = 'asc';
 let tableCurrentPage = 1;
 let tablePageSize = 10;
 
-// Default Google Sheets URL (matching app.js)
-const DEFAULT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbytaI36PDf09D7O2RicMWEkGn-JXiew3zPL6bc3OLGKTc0klmd0gUj9ZCfdg2JvY9Sb/exec';
-
 // --- ROBUST EXCEL COLUMN KEY ACCESSORS ---
-function getRowCorpPlant(row) {
-  return row['Corp/Plant'] || row['Corp'] || row['Plant'] || row['corp'] || row['plant'] || row['division'] || row['Division'] || 'Unknown';
+function getRobustRowValue(row, targetKeys, defaultValue = '') {
+  if (!row) return defaultValue;
+  for (const key of targetKeys) {
+    if (row[key] !== undefined && row[key] !== null) {
+      return String(row[key]).trim();
+    }
+  }
+  const cleanKey = (k) => String(k).toLowerCase().replace(/[\s\-_]/g, '');
+  const cleanTargetKeys = targetKeys.map(cleanKey);
+  for (const actualKey of Object.keys(row)) {
+    if (cleanTargetKeys.includes(cleanKey(actualKey))) {
+      const val = row[actualKey];
+      if (val !== undefined && val !== null) {
+        return String(val).trim();
+      }
+    }
+  }
+  return defaultValue;
+}
+
+function getRowLicense(row) {
+  return getRobustRowValue(row, ['License', 'license', 'license type', 'licenseid', 'license id'], 'Unknown');
 }
 
 function getRowDepartment(row) {
-  return row['Dept'] || row['Department'] || row['dept'] || row['department'] || 'Unknown';
+  return getRobustRowValue(row, ['Department', 'department', 'dept', 'dep', 'division', 'div'], 'Unknown');
 }
 
-function getRowCategory(row) {
-  return row['Cat'] || row['Category'] || row['cat'] || row['category'] || '';
+// Group/User group accessor
+function getRowGroup(row) {
+  return getRobustRowValue(row, ['Group', 'group', 'user group', 'usergroup', 'grp'], '');
 }
 
-function getRowEmployeeId(row) {
-  return row['GenID'] || row['GenId'] || row['Employee ID'] || row['EmployeeID'] || row['id'] || row['ID'] || '';
+function getRowSAPID(row) {
+  return getRobustRowValue(row, ['SAPID', 'sapid', 'sap id', 'sap_id', 'id', 'user id', 'userid', 'emp id', 'empid', 'employee id'], '');
 }
 
-function getRowEmployeeName(row) {
-  return row['Name'] || row['name'] || row['Employee Name'] || row['EmployeeName'] || 'Unknown';
+function getRowUserName(row) {
+  return getRobustRowValue(row, ['Name', 'name', 'user name', 'username', 'employee name', 'emp name', 'full name', 'fullname'], 'Unknown');
 }
 
-function getRowCourseName(row) {
-  return row['cname'] || row['Course Name'] || row['CourseName'] || row['course_name'] || row['Course'] || row['course'] || 'Unknown';
+function getRowFunction(row) {
+  return getRobustRowValue(row, ['Function', 'function', 'role', 'job title', 'jobtitle', 'group', 'user group'], 'Unknown');
 }
 
-function getRowMandays(row) {
-  const val = row['mandays'] !== undefined ? row['mandays'] : (row['Mandays'] !== undefined ? row['Mandays'] : (row['manday'] !== undefined ? row['manday'] : row['Manday']));
-  return parseFloat(val) || 0;
+function getRowLastLogon(row) {
+  return getRobustRowValue(row, ['Last Logon', 'last logon', 'lastlogon', 'last_logon', 'logon', 'last login', 'lastlogin'], '-');
 }
 
-function getRowAttended(row) {
-  return row['attended'] || row['Attended'] || '';
-}
+
 
 // Function to convert Google Sheets URL to CSV export URL
 function getGoogleSheetsCsvUrl(urlStr) {
   if (!urlStr) return null;
-  
+
   if (urlStr.includes('/pub')) {
     if (urlStr.includes('output=csv')) {
       return urlStr;
@@ -161,13 +201,13 @@ function getGoogleSheetsCsvUrl(urlStr) {
   const idMatch = urlStr.match(/\/d\/([a-zA-Z0-9-_]+)/);
   if (!idMatch) return null;
   const sheetId = idMatch[1];
-  
+
   let gid = '0';
   const gidMatch = urlStr.match(/[?&#]gid=([0-9]+)/);
   if (gidMatch) {
     gid = gidMatch[1];
   }
-  
+
   return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}`;
 }
 
@@ -176,7 +216,7 @@ async function fetchSpreadsheetData(sheetUrl) {
   try {
     // Detect URL type
     const isDomainScript = sheetUrl.includes('script.google.com/a/macros/');
-    const isAppsScript   = isDomainScript || sheetUrl.includes('script.google.com/macros/s/');
+    const isAppsScript = isDomainScript || sheetUrl.includes('script.google.com/macros/s/');
 
     let parsedData = [];
 
@@ -253,8 +293,8 @@ async function fetchSpreadsheetData(sheetUrl) {
       } else if (result.csv) {
         // CSV response from Google Sheets
         const workbook = XLSX.read(result.csv, { type: 'string' });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
+        const sheetName = getBestSheetName(workbook);
+        const worksheet = workbook.Sheets[sheetName];
         parsedData = XLSX.utils.sheet_to_json(worksheet);
       }
     }
@@ -300,55 +340,63 @@ async function fetchSpreadsheetData(sheetUrl) {
   }
 }
 
+// Aesthetics and modal header updates are statically handled in markup now
+
 // Initialize options
 function initLedger() {
-  const corps = new Set();
+  const licenses = new Set();
   const depts = new Set();
 
   rawData.forEach(row => {
-    const corp = getRowCorpPlant(row);
+    const license = getRowLicense(row);
     const dept = getRowDepartment(row);
-    if (corp) corps.add(corp);
+    if (license) licenses.add(license);
     if (dept) depts.add(dept);
   });
 
-  // Corp Select
-  const corpSelect = document.getElementById('filter-corp');
-  corpSelect.textContent = '';
-  appendSafeOption(corpSelect, 'ALL', 'All Plants');
-  Array.from(corps).sort().forEach(corp => {
-    appendSafeOption(corpSelect, corp, corp);
-  });
+  // License Select
+  const licenseSelect = document.getElementById('filter-license');
+  if (licenseSelect) {
+    licenseSelect.textContent = '';
+    appendSafeOption(licenseSelect, 'ALL', 'All Licenses');
+    Array.from(licenses).sort().forEach(license => {
+      appendSafeOption(licenseSelect, license, license);
+    });
+  }
 
   // Dept Select
   const deptSelect = document.getElementById('filter-dept');
-  deptSelect.textContent = '';
-  appendSafeOption(deptSelect, 'ALL', 'All Departments');
-  Array.from(depts).sort().forEach(dept => {
-    appendSafeOption(deptSelect, dept, dept);
-  });
+  if (deptSelect) {
+    deptSelect.textContent = '';
+    appendSafeOption(deptSelect, 'ALL', 'All Departments');
+    Array.from(depts).sort().forEach(dept => {
+      appendSafeOption(deptSelect, dept, dept);
+    });
+  }
 
   // Reset Filters UI
-  corpSelect.value = 'ALL';
-  deptSelect.value = 'ALL';
-  document.getElementById('search-employee').value = '';
-  document.getElementById('table-page-size').value = '10';
-  
-  currentFilters = { corp: 'ALL', dept: 'ALL', search: '' };
+  if (licenseSelect) licenseSelect.value = 'ALL';
+  if (deptSelect) deptSelect.value = 'ALL';
+  const searchInput = document.getElementById('search-employee');
+  if (searchInput) searchInput.value = '';
+  const pageSizeSelect = document.getElementById('table-page-size');
+  if (pageSizeSelect) pageSizeSelect.value = '10';
+
+  currentFilters = { license: 'ALL', dept: 'ALL', search: '' };
   tableCurrentPage = 1;
   tablePageSize = 10;
-  tableSortColumn = 'id';
+  tableSortColumn = 'sapid';
   tableSortDirection = 'asc';
 
   // Update table headers UI classes
-  const headers = ['th-genid', 'th-name', 'th-corp', 'th-dept', 'th-courses', 'th-mandays'];
+  const headers = ['th-sapid', 'th-name', 'th-license', 'th-department', 'th-group', 'th-lastlogon'];
   headers.forEach(hId => {
     const el = document.getElementById(hId);
     if (el) {
       el.classList.remove('sorted-asc', 'sorted-desc');
     }
   });
-  const defaultHeader = document.getElementById('th-genid');
+  const defaultHeader = document.getElementById('th-sapid');
   if (defaultHeader) {
     defaultHeader.classList.add('sorted-asc');
   }
@@ -356,43 +404,25 @@ function initLedger() {
   updateLedger();
 }
 
-// Aggregate and trigger rendering
+// Filter and map raw data to employee list
 function updateLedger() {
   const filteredRows = rawData.filter(row => {
-    const matchCorp = currentFilters.corp === 'ALL' || getRowCorpPlant(row) === currentFilters.corp;
+    const matchLicense = currentFilters.license === 'ALL' || getRowLicense(row) === currentFilters.license;
     const matchDept = currentFilters.dept === 'ALL' || getRowDepartment(row) === currentFilters.dept;
-    return matchCorp && matchDept;
+    return matchLicense && matchDept;
   });
 
-  const employeeMap = {};
-  filteredRows.forEach(row => {
-    const genId = getRowEmployeeId(row) || `EMP-${getRowEmployeeName(row)}`;
-    const name = getRowEmployeeName(row);
-    const corp = getRowCorpPlant(row);
-    const dept = getRowDepartment(row);
-    const mandays = getRowMandays(row);
-    const attended = getRowAttended(row) === 'Yes';
-
-    if (!employeeMap[genId]) {
-      employeeMap[genId] = {
-        id: genId,
-        name: name,
-        corp: corp,
-        dept: dept,
-        mandaysSum: 0,
-        coursesTotal: 0,
-        coursesAttended: 0
-      };
-    }
-
-    employeeMap[genId].mandaysSum += mandays;
-    employeeMap[genId].coursesTotal += 1;
-    if (attended) {
-      employeeMap[genId].coursesAttended += 1;
-    }
+  employeesList = filteredRows.map(row => {
+    return {
+      sapid: getRowSAPID(row),
+      name: getRowUserName(row),
+      license: getRowLicense(row),
+      department: getRowDepartment(row),
+      group: getRowGroup(row),
+      lastlogon: getRowLastLogon(row)
+    };
   });
 
-  employeesList = Object.values(employeeMap);
   renderEmployeeTable();
 }
 
@@ -404,27 +434,22 @@ function renderEmployeeTable() {
   if (currentFilters.search) {
     const term = currentFilters.search;
     list = list.filter(emp => {
-      return emp.name.toLowerCase().includes(term) || emp.id.toLowerCase().includes(term);
+      return emp.name.toLowerCase().includes(term) || emp.sapid.toLowerCase().includes(term);
     });
   }
 
   // Sort list
   list.sort((a, b) => {
-    let valA = a[tableSortColumn];
-    let valB = b[tableSortColumn];
-
-    if (tableSortColumn === 'courses') {
-      valA = a.coursesTotal;
-      valB = b.coursesTotal;
-    }
+    const valA = a[tableSortColumn] || '';
+    const valB = b[tableSortColumn] || '';
 
     if (typeof valA === 'string') {
-      return tableSortDirection === 'asc' 
-        ? valA.localeCompare(valB) 
+      return tableSortDirection === 'asc'
+        ? valA.localeCompare(valB)
         : valB.localeCompare(valA);
     } else {
-      return tableSortDirection === 'asc' 
-        ? valA - valB 
+      return tableSortDirection === 'asc'
+        ? valA - valB
         : valB - valA;
     }
   });
@@ -464,19 +489,16 @@ function renderEmployeeTable() {
     const tr = document.createElement('tr');
     tr.className = 'ledger-row';
     tr.innerHTML = `
-      <td style="font-weight: 600;">${escapeHTML(emp.id)}</td>
+      <td style="font-weight: 600;">${escapeHTML(emp.sapid)}</td>
       <td>${escapeHTML(emp.name)}</td>
-      <td><span class="badge-plant">${escapeHTML(emp.corp)}</span></td>
-      <td><span class="badge-dept">${escapeHTML(emp.dept)}</span></td>
-      <td style="text-align: center;">
-        <span style="font-weight: 500;">${escapeHTML(emp.coursesAttended)}</span>
-        <span style="color: var(--text-muted);">/ ${escapeHTML(emp.coursesTotal)}</span>
-      </td>
-      <td style="text-align: right; font-weight: 700; color: #38bdf8;">${escapeHTML(emp.mandaysSum.toFixed(1))}</td>
+      <td><span class="badge-license">${escapeHTML(emp.license)}</span></td>
+      <td><span class="badge-dept">${escapeHTML(emp.department)}</span></td>
+      <td style="text-align: left;">${escapeHTML(emp.group)}</td>
+      <td style="text-align: left; font-weight: 600; color: #38bdf8;">${escapeHTML(emp.lastlogon)}</td>
     `;
-    
+
     tr.addEventListener('click', () => {
-      showEmployeeDetailModal(emp.id, emp.name);
+      showEmployeeDetailModal(emp.sapid, emp.name);
     });
 
     tbody.appendChild(tr);
@@ -487,50 +509,31 @@ function renderEmployeeTable() {
   document.getElementById('btn-next-page').disabled = tableCurrentPage === totalPages;
 }
 
-// Show detailed courses modal for selected employee
+// Show detailed user profile modal for selected user
 function showEmployeeDetailModal(empId, empName) {
-  const rawRowsList = rawData.filter(row => {
-    const genId = getRowEmployeeId(row) || `EMP-${getRowEmployeeName(row)}`;
-    return genId === empId;
-  });
-
-  rawRowsList.sort((a, b) => {
-    const dateA = new Date(a.fd || a['From Date'] || 0);
-    const dateB = new Date(b.fd || b['From Date'] || 0);
-    return dateA - dateB;
-  });
+  const userRow = rawData.find(row => getRowSAPID(row) === empId);
 
   const modalTitle = document.getElementById('modal-title');
   const modalSubtitle = document.getElementById('modal-subtitle');
   const modalTableBody = document.getElementById('modal-table-body');
 
   modalTitle.innerText = `${empName} (${empId})`;
-  modalSubtitle.innerText = `Aggregated course enrolment records (${rawRowsList.length} items, sorted by date)`;
+  modalSubtitle.innerText = 'SAP account profile details';
 
   modalTableBody.innerHTML = '';
-  rawRowsList.forEach((row, index) => {
+  if (userRow) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td style="padding: 0.8rem 1rem;">${index + 1}</td>
-      <td style="padding: 0.8rem 1rem; font-weight: 600;">${escapeHTML(getRowEmployeeId(row))}</td>
-      <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowEmployeeName(row))}</td>
-      <td style="padding: 0.8rem 1rem;">${escapeHTML(row.Des || row['Designation'] || row['des'] || row['designation'] || '-')}</td>
-      <td style="padding: 0.8rem 1rem;"><span class="badge-dept">${escapeHTML(getRowDepartment(row))}</span></td>
-      <td style="padding: 0.8rem 1rem;"><span class="badge-plant">${escapeHTML(getRowCorpPlant(row))}</span></td>
-      <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowCategory(row) || '-')}</td>
-      <td style="padding: 0.8rem 1rem; font-size: 0.85rem; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHTML(getRowCourseName(row))}">${escapeHTML(getRowCourseName(row))}</td>
-      <td style="padding: 0.8rem 1rem;">${escapeHTML(row.fd || row['From Date'] || row['fd'] || row['from_date'] || '-')}</td>
-      <td style="padding: 0.8rem 1rem;">${escapeHTML(row.ed || row['To Date'] || row['ed'] || row['to_date'] || '-')}</td>
-      <td style="padding: 0.8rem 1rem; font-size: 0.85rem;">${escapeHTML(row.organisor || row['Organisor'] || row['Organizer'] || row['organizer'] || '-')}</td>
-      <td style="padding: 0.8rem 1rem; text-align: right; font-weight: 700; color: #38bdf8;">${escapeHTML(getRowMandays(row).toFixed(1))}</td>
-      <td style="padding: 0.8rem 1rem; text-align: center;">
-        <span style="color: ${getRowAttended(row) === 'Yes' ? '#10b981' : '#f43f5e'}; font-weight: 600;">
-          ${escapeHTML(getRowAttended(row) || 'No')}
-        </span>
-      </td>
+      <td style="padding: 0.8rem 1rem; font-weight: 600;">${escapeHTML(getRowSAPID(userRow))}</td>
+      <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowUserName(userRow))}</td>
+      <td style="padding: 0.8rem 1rem;"><span class="badge-license">${escapeHTML(getRowLicense(userRow))}</span></td>
+      <td style="padding: 0.8rem 1rem;"><span class="badge-dept">${escapeHTML(getRowDepartment(userRow))}</span></td>
+      <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowFunction(userRow))}</td>
+      <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowLastLogon(userRow))}</td>
+      <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowGroup(userRow) || '-')}</td>
     `;
     modalTableBody.appendChild(tr);
-  });
+  }
 
   document.getElementById('drilldown-modal').classList.add('active');
 }
@@ -543,7 +546,7 @@ function closeModal() {
 function setupLedgerListeners() {
   const searchBtn = document.getElementById('search-btn');
   const searchInput = document.getElementById('search-employee');
-  
+
   const performSearch = () => {
     currentFilters.search = searchInput.value.toLowerCase().trim();
     tableCurrentPage = 1;
@@ -562,17 +565,17 @@ function setupLedgerListeners() {
   // Clear button
   document.getElementById('reset-filter-btn').addEventListener('click', () => {
     searchInput.value = '';
-    document.getElementById('filter-corp').value = 'ALL';
+    document.getElementById('filter-license').value = 'ALL';
     document.getElementById('filter-dept').value = 'ALL';
-    
-    currentFilters = { corp: 'ALL', dept: 'ALL', search: '' };
+
+    currentFilters = { license: 'ALL', dept: 'ALL', search: '' };
     tableCurrentPage = 1;
     updateLedger();
   });
 
   // Dropdown filter changes
-  document.getElementById('filter-corp').addEventListener('change', (e) => {
-    currentFilters.corp = e.target.value;
+  document.getElementById('filter-license').addEventListener('change', (e) => {
+    currentFilters.license = e.target.value;
     tableCurrentPage = 1;
     updateLedger();
   });
@@ -592,7 +595,7 @@ function setupLedgerListeners() {
   });
 
   // Table Headers Sorting
-  const headers = ['th-genid', 'th-name', 'th-corp', 'th-dept', 'th-courses', 'th-mandays'];
+  const headers = ['th-sapid', 'th-name', 'th-license', 'th-department', 'th-group', 'th-lastlogon'];
   headers.forEach(id => {
     const el = document.getElementById(id);
     if (el) {
@@ -604,7 +607,7 @@ function setupLedgerListeners() {
           tableSortColumn = col;
           tableSortDirection = 'asc';
         }
-        
+
         headers.forEach(hId => {
           const hEl = document.getElementById(hId);
           if (hEl) {
@@ -612,7 +615,7 @@ function setupLedgerListeners() {
           }
         });
         el.classList.add(tableSortDirection === 'asc' ? 'sorted-asc' : 'sorted-desc');
-        
+
         renderEmployeeTable();
       });
     }
@@ -625,11 +628,11 @@ function setupLedgerListeners() {
       renderEmployeeTable();
     }
   });
-  
+
   document.getElementById('btn-next-page').addEventListener('click', () => {
     const totalPages = Math.ceil(employeesList.filter(emp => {
       if (!currentFilters.search) return true;
-      return emp.name.toLowerCase().includes(currentFilters.search) || emp.id.toLowerCase().includes(currentFilters.search);
+      return emp.name.toLowerCase().includes(currentFilters.search) || emp.sapid.toLowerCase().includes(currentFilters.search);
     }).length / tablePageSize);
 
     if (tableCurrentPage < totalPages) {
@@ -645,12 +648,12 @@ function setupLedgerListeners() {
   });
 
   // ─── Settings Footer & Modals Listeners ─────────────────────────────────────
-  
+
   // Privacy Policy modal
   const linkPrivacy = document.getElementById('link-privacy-policy');
   const modalPrivacy = document.getElementById('privacy-modal');
   const btnClosePrivacy = document.getElementById('btn-close-privacy');
-  
+
   if (linkPrivacy && modalPrivacy && btnClosePrivacy) {
     linkPrivacy.addEventListener('click', (e) => {
       e.preventDefault();
@@ -668,7 +671,7 @@ function setupLedgerListeners() {
   const linkLicenses = document.getElementById('link-licenses');
   const modalLicenses = document.getElementById('licenses-modal');
   const btnCloseLicenses = document.getElementById('btn-close-licenses');
-  
+
   if (linkLicenses && modalLicenses && btnCloseLicenses) {
     linkLicenses.addEventListener('click', (e) => {
       e.preventDefault();
@@ -748,6 +751,67 @@ function setupLedgerListeners() {
     });
   }
 
+  // PDF Capture/Download — true full-page screenshot approach
+  const btnDownloadPdf = document.getElementById('btn-download-pdf');
+  if (btnDownloadPdf) {
+    btnDownloadPdf.addEventListener('click', async () => {
+      const originalLabel = btnDownloadPdf.textContent;
+      btnDownloadPdf.textContent = '⏳ Generating...';
+      btnDownloadPdf.disabled = true;
+
+      try {
+        const element = document.querySelector('.dashboard-wrapper');
+
+        // Step 1: Render the entire ledger page to a canvas (full scroll height)
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#0b0f19',
+          scrollX: 0,
+          scrollY: -window.scrollY,
+          windowWidth: document.documentElement.offsetWidth,
+          windowHeight: element.scrollHeight,
+          height: element.scrollHeight,
+          onclone: (clonedDoc) => {
+            const wrapper = clonedDoc.querySelector('.dashboard-wrapper');
+            if (wrapper) {
+              wrapper.style.maxWidth = 'none';
+              wrapper.style.overflow = 'visible';
+            }
+          }
+        });
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+        // Step 2: Build a PDF page sized exactly to the screenshot
+        const pxToMm = (px) => px * 25.4 / 96;
+        const pageWidthMm = pxToMm(canvas.width / 2);
+        const pageHeightMm = pxToMm(canvas.height / 2);
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+          orientation: pageWidthMm > pageHeightMm ? 'landscape' : 'portrait',
+          unit: 'mm',
+          format: [pageWidthMm, pageHeightMm]
+        });
+
+        pdf.addImage(imgData, 'JPEG', 0, 0, pageWidthMm, pageHeightMm);
+
+        const today = new Date().toISOString().split('T')[0];
+        pdf.save(`SAPID_Ledger_${today}.pdf`);
+
+        showToast('PDF downloaded successfully!');
+      } catch (err) {
+        console.error('PDF Generation failed:', err);
+        showToast('PDF generation failed: ' + err.message, 'error');
+        tauriInvoke('append_log', { level: 'error', message: `PDF export failed: ${err.message}` }).catch(console.error);
+      } finally {
+        btnDownloadPdf.textContent = originalLabel;
+        btnDownloadPdf.disabled = false;
+      }
+    });
+  }
+
   // Configuration Backup/Export
   const btnExport = document.getElementById('btn-export-config');
   if (btnExport) {
@@ -757,14 +821,14 @@ function setupLedgerListeners() {
           dashboard_sheet_url: localStorage.getItem('dashboard_sheet_url') || '',
           cached_sheet_data: JSON.parse(localStorage.getItem('cached_sheet_data') || '[]'),
           exported_at: new Date().toISOString(),
-          app: "SkillTrack Analyzer",
+          app: "SAPID License Analyzer",
           version: "1.0.0"
         };
         const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `skilltrack_config_${new Date().toISOString().split('T')[0]}.json`;
+        a.download = `sap_license_config_${new Date().toISOString().split('T')[0]}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -831,11 +895,33 @@ function setupLedgerListeners() {
 window.addEventListener('DOMContentLoaded', () => {
   setupLedgerListeners();
 
-  let activeUrl = localStorage.getItem('dashboard_sheet_url');
-  if (!activeUrl || activeUrl === 'https://script.google.com/a/macros/vitstudent.ac.in/s/AKfycbx4BgQYzPr7dDzF4zDCYkc3eANVHwxXn0ztHedVPu5Fa9ldh4MaARYjtixV21nHJPlS/exec') {
-    localStorage.removeItem('dashboard_sheet_url');
-    activeUrl = DEFAULT_SHEET_URL;
+  // Clear legacy default URL on startup
+  localStorage.removeItem('dashboard_sheet_url');
+  localStorage.removeItem('cached_sheet_data');
+  let activeUrl = null;
+
+  if (activeUrl) {
+    fetchSpreadsheetData(activeUrl);
+  } else {
+    const cachedDataStr = localStorage.getItem('cached_sheet_data');
+    if (cachedDataStr) {
+      try {
+        rawData = JSON.parse(cachedDataStr);
+        if (rawData.length > 0) {
+          initLedger();
+          return;
+        }
+      } catch (parseErr) {
+        console.error('Failed to parse cached data:', parseErr);
+      }
+    }
+
+    if (typeof window.PRELOADED_DATA !== 'undefined') {
+      rawData = window.PRELOADED_DATA;
+      initLedger();
+    } else {
+      rawData = [];
+      initLedger();
+    }
   }
-  
-  fetchSpreadsheetData(activeUrl);
 });

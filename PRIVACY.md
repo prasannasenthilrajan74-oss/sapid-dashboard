@@ -1,8 +1,8 @@
-# Privacy Policy for SkillTrack Analyzer
+# Privacy Policy for SAPID License Analyzer
 
-**Last Updated: June 1, 2026**
+**Last Updated: June 2, 2026**
 
-SkillTrack Analyzer is built as a cross-platform desktop application using the Tauri framework. We take your privacy very seriously. This document describes how your data is handled.
+SAPID License Analyzer is built as a cross-platform desktop application using the Tauri framework. We take your privacy very seriously. This document describes how your data is handled.
 
 ---
 
@@ -25,7 +25,7 @@ The application uses local web browser database files (`localStorage`) to rememb
 You can fully clear this data at any time by pressing the **Reset to Default Data** button in the header sync bar, or by importing a different configuration.
 
 ## 4. Local Logging
-Application runtime logs (e.g. sync failures or parsing issues) are appended to a plain text log file (`error.log`) saved in your local operating system's designated app data directory (e.g. `AppData/Local/com.skilltrack.analyzer/logs/error.log`).
+Application runtime logs (e.g. sync failures or parsing issues) are appended to a plain text log file (`error.log`) saved in your local operating system's designated app data directory (e.g. `AppData/Local/com.sapid.license.analyzer/logs/error.log`).
 - These logs are designed to aid in manual diagnostic and troubleshooting procedures.
 - They are kept strictly local and are never auto-transmitted.
 - You can review and clear these logs directly from the **Error Logs** panel in the footer.

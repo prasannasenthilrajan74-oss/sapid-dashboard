@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Employee Ledger - SkillTrack Analyzer</title>
+  <title>SAP User Ledger - SAPID License Analyzer</title>
   <link rel="stylesheet" href="styles.css?v=3">
   <!-- SheetJS for reading Google Sheet data client-side -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- PDF Export: html2canvas (screenshot) + jsPDF (PDF writer) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
   <!-- Ambient background glow elements -->
@@ -17,12 +20,12 @@
     <!-- Header Section -->
     <header class="dashboard-header">
       <div class="header-title-section">
-        <h1>SkillTrack Analyzer</h1>
-        <p>Employee Training Mandays Ledger</p>
+        <h1>SAPID License Analyzer</h1>
+        <p>SAP User Licensing &amp; Logon Activity Ledger</p>
       </div>
       
       <!-- Display sync status / simple link indicator -->
-      <div class="file-upload-container">
+      <div class="file-upload-container" data-html2canvas-ignore="true">
         <span style="font-size: 0.85rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem; background: rgba(30, 41, 59, 0.4); padding: 0.5rem 1rem; border-radius: var(--border-radius-md); border: 1px solid var(--border-color);">
           <span>🔗</span> Synced with Active Sheet Link
         </span>
@@ -30,7 +33,7 @@
     </header>
 
     <!-- Top Navigation Menu -->
-    <nav class="dashboard-nav" style="justify-content: space-between; align-items: center; display: flex; width: 100%;">
+    <nav class="dashboard-nav" data-html2canvas-ignore="true" style="justify-content: space-between; align-items: center; display: flex; width: 100%;">
       <div style="display: flex; gap: 1rem;">
         <a href="index.html" class="nav-item">📊 Dashboard</a>
         <a href="ledger.html" class="nav-item active">📋 Employee Ledger</a>
@@ -41,18 +44,18 @@
     <section class="glass-card filter-panel glow-animation">
       <!-- Search Input + Search Button -->
       <div class="filter-group">
-        <label for="search-employee">Search Employee</label>
+        <label for="search-employee">Search User</label>
         <div class="search-button-group">
-          <input type="text" id="search-employee" class="search-input-field" placeholder="Name or GenID...">
+          <input type="text" id="search-employee" class="search-input-field" placeholder="Name or SAPID...">
           <button id="search-btn" class="search-action-btn">🔍 Search</button>
         </div>
       </div>
 
       <div class="filter-group">
-        <label for="filter-corp">Corp/Plant</label>
+        <label for="filter-license">License ID</label>
         <div class="select-wrapper">
-          <select id="filter-corp">
-            <option value="ALL">All Plants</option>
+          <select id="filter-license">
+            <option value="ALL">All Licenses</option>
           </select>
         </div>
       </div>
@@ -83,18 +86,18 @@
       </div>
     </section>
 
-    <!-- Employee Mandays Ledger Section -->
+    <!-- SAP User Ledger Section -->
     <section class="glass-card table-card" style="margin-top: 0;">
       <div class="table-responsive">
         <table>
           <thead>
             <tr>
-              <th id="th-genid" data-sort="id" class="sorted-asc">Employee ID</th>
-              <th id="th-name" data-sort="name">Employee Name</th>
-              <th id="th-corp" data-sort="corp">Corp/Plant</th>
-              <th id="th-dept" data-sort="dept">Department</th>
-              <th id="th-courses" data-sort="courses" style="text-align: center;">Trainings Attended</th>
-              <th id="th-mandays" data-sort="mandays" style="text-align: right;">Total Mandays</th>
+              <th id="th-sapid" data-sort="sapid" class="sorted-asc">SAPID</th>
+              <th id="th-name" data-sort="name">User Name</th>
+              <th id="th-license" data-sort="license">License</th>
+              <th id="th-department" data-sort="department">Department</th>
+              <th id="th-group" data-sort="group" style="text-align: left;">User Group</th>
+              <th id="th-lastlogon" data-sort="lastlogon" style="text-align: left;">Last Logon</th>
             </tr>
           </thead>
           <tbody id="employee-table-body">
@@ -109,7 +112,7 @@
       </div>
 
       <!-- Pagination footer -->
-      <div class="pagination">
+      <div class="pagination" data-html2canvas-ignore="true">
         <div id="table-info">Showing 0 to 0 of 0 employees</div>
         <div class="pagination-buttons">
           <button id="btn-prev-page" class="pagination-btn" disabled>Previous</button>
@@ -118,9 +121,9 @@
       </div>
     </section>
   <!-- Footer Component -->
-  <footer class="dashboard-footer">
+  <footer class="dashboard-footer" data-html2canvas-ignore="true">
     <div class="footer-left">
-      <span class="app-version">SkillTrack Analyzer v1.0.0</span>
+      <span class="app-version">SAPID License Analyzer v1.0.0</span>
       <span class="divider">|</span>
       <a href="#" id="link-user-manual" class="footer-link">📖 User Manual (PDF)</a>
       <span class="divider">|</span>
@@ -129,6 +132,7 @@
       <a href="#" id="link-licenses" class="footer-link">📄 Licenses</a>
     </div>
     <div class="footer-right">
+      <button id="btn-download-pdf" class="footer-btn">📸 Capture PDF</button>
       <button id="btn-export-config" class="footer-btn">📥 Export Config</button>
       <button id="btn-import-config" class="footer-btn">📤 Import Config</button>
       <input type="file" id="import-config-file" accept=".json" class="hidden">
@@ -142,8 +146,8 @@
   <div class="modal-container">
     <div class="modal-header">
       <div class="modal-title-area">
-        <h3 id="modal-title">Employee Details</h3>
-        <p id="modal-subtitle">Sub-breakdown of filtered employees</p>
+        <h3 id="modal-title">User Details</h3>
+        <p id="modal-subtitle">SAP account profile details</p>
       </div>
       <button class="modal-close-btn" id="modal-close-btn">&times;</button>
     </div>
@@ -152,19 +156,13 @@
         <table>
           <thead>
             <tr style="background-color: #111827;">
-              <th style="padding: 0.75rem 1rem;">Sno</th>
-              <th style="padding: 0.75rem 1rem;">Employee ID</th>
+              <th style="padding: 0.75rem 1rem;">SAPID</th>
               <th style="padding: 0.75rem 1rem;">Name</th>
-              <th style="padding: 0.75rem 1rem;">Designation</th>
+              <th style="padding: 0.75rem 1rem;">License</th>
               <th style="padding: 0.75rem 1rem;">Department</th>
-              <th style="padding: 0.75rem 1rem;">Corp/Plant</th>
-              <th style="padding: 0.75rem 1rem;">Category</th>
-              <th style="padding: 0.75rem 1rem;">Course Name</th>
-              <th style="padding: 0.75rem 1rem;">From Date</th>
-              <th style="padding: 0.75rem 1rem;">To Date</th>
-              <th style="padding: 0.75rem 1rem;">Organiser</th>
-              <th style="padding: 0.75rem 1rem; text-align: right;">Mandays</th>
-              <th style="padding: 0.75rem 1rem; text-align: center;">Attended</th>
+              <th style="padding: 0.75rem 1rem;">Function</th>
+              <th style="padding: 0.75rem 1rem;">Last Logon</th>
+              <th style="padding: 0.75rem 1rem;">Group</th>
             </tr>
           </thead>
           <tbody id="modal-table-body">
@@ -182,13 +180,13 @@
     <div class="modal-header">
       <div class="modal-title-area">
         <h3>Privacy Policy</h3>
-        <p>SkillTrack Analyzer Data Protection</p>
+        <p>SAPID License Analyzer Data Protection</p>
       </div>
       <button class="modal-close-btn" id="btn-close-privacy">&times;</button>
     </div>
     <div class="modal-content-area text-content">
       <h4>1. Local-First Architecture</h4>
-      <p>SkillTrack Analyzer is designed to be a local-first application. All processes run locally on your system. None of your data, sheet configurations, or uploaded spreadsheets are sent to external trackers or analytics servers.</p>
+      <p>SAPID License Analyzer is designed to be a local-first application. All processes run locally on your system. None of your data, sheet configurations, or uploaded spreadsheets are sent to external trackers or analytics servers.</p>
       
       <h4>2. Google Sheets & Apps Script Sync</h4>
       <p>When syncing with Google Sheets, the application communicates directly with Google servers. For domain-restricted links, the communication happens entirely within your local webview using your current active Google Workspace session. No credentials or sheet data are stored or routed through intermediate APIs.</p>
@@ -208,12 +206,12 @@
     <div class="modal-header">
       <div class="modal-title-area">
         <h3>Third-Party Licenses</h3>
-        <p>Open-source software used in SkillTrack Analyzer</p>
+        <p>Open-source software used in SAPID License Analyzer</p>
       </div>
       <button class="modal-close-btn" id="btn-close-licenses">&times;</button>
     </div>
     <div class="modal-content-area text-content">
-      <p>SkillTrack Analyzer is built using the following open-source libraries:</p>
+      <p>SAPID License Analyzer is built using the following open-source libraries:</p>
       <ul>
         <li><strong>Tauri Framework</strong> (MIT License) - Cross-platform GUI framework.</li>
         <li><strong>Chart.js</strong> (MIT License) - Beautiful dashboard charting.</li>
@@ -248,6 +246,8 @@
   </div>
 </div>
 
+  <!-- Load preloaded SAP user data first -->
+  <script src="preloaded_data.js"></script>
   <!-- Load ledger logic -->
   <script src="ledger.js"></script>
 </body>

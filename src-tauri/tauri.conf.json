@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "SkillTrack Analyzer",
+  "productName": "SAPID License Analyzer",
   "version": "1.0.0",
-  "identifier": "com.skilltrack.analyzer",
+  "identifier": "com.sapid.license.analyzer",
   "build": {
     "beforeDevCommand": "",
     "beforeBuildCommand": "",
@@ -12,7 +12,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "SkillTrack Analyzer",
+        "title": "SAPID License Analyzer",
         "width": 1400,
         "height": 900,
         "minWidth": 1000,

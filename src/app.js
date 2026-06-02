@@ -64,6 +64,31 @@ function isAllowedGoogleDataUrl(urlValue) {
   }
 }
 
+// Returns the sheet name matching priority keywords (case-insensitive, trimmed), falling back to the first sheet.
+function getBestSheetName(workbook) {
+  if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+    return null;
+  }
+  const targets = [
+    'live users',
+    'live user',
+    'acctive user',
+    'active user',
+    'sapidinfo',
+    'sapid info',
+    'sapid',
+    'total id'
+  ];
+  for (const target of targets) {
+    const matched = workbook.SheetNames.find(name => {
+      if (typeof name !== 'string') return false;
+      return name.trim().toLowerCase() === target.toLowerCase();
+    });
+    if (matched) return matched;
+  }
+  return workbook.SheetNames[0];
+}
+
 // Show a premium glassmorphic toast notification
 function showToast(message, type = 'success') {
   let container = document.getElementById('toast-container');
@@ -100,88 +125,100 @@ function showToast(message, type = 'success') {
 let rawData = [];
 let employeesList = []; // Aggregated employees list
 let currentFilters = {
-  corp: 'ALL',
-  dept: 'ALL',
-  attended: 'ALL'
+  license: 'ALL',
+  dept: 'ALL'
 };
 
-// Toggle for range pie charts slice grouping: 'corp' or 'dept'
-let pieSliceGrouping = 'corp';
-
-
-let selectedLeadershipCourse = '';
+let selectedExplorerGroup = '';
+let groupCurrentPage = 1;
+const groupPageSize = 8;
 
 // Chart Instances
-let plantChartInstance = null;
+let licenseChartInstance = null;
 let deptChartInstance = null;
-let rangeChartInstances = {};
 let leadershipChartInstance = null;
 
+// Default purchased license totals (originally bought from the head office)
+const DEFAULT_LICENSE_PURCHASED = {
+  'AX': 150,
+  'AY': 150,
+  'FX': 150,
+  'HC': 150,
+  'HD': 150,
+  'Other': 150
+};
+
 // Color Palettes
-const CORP_COLORS = {
-  'H0': '#0ea5e9',       // Sky Blue
-  'P1': '#6366f1',       // Indigo
-  'P2': '#a855f7',       // Purple
-  'P3': '#ec4899',       // Pink
-  'P4': '#14b8a6',       // Teal
+const LICENSE_COLORS = {
+  'AX': '#0ea5e9',       // Sky Blue
+  'AY': '#6366f1',       // Indigo
+  'FX': '#a855f7',       // Purple
+  'HC': '#ec4899',       // Pink
+  'HD': '#14b8a6',       // Teal
   'Other': '#64748b'     // Muted Slate
 };
 
 const DEPT_COLORS = {
-  'Admin': '#f43f5e',      // Rose
-  'QA': '#10b981',         // Emerald
-  'Operations': '#f59e0b', // Amber
-  'HR': '#3b82f6',         // Blue
-  'IT': '#8b5cf6',         // Purple
-  'Finance': '#06b6d4',    // Cyan
-  'Production': '#84cc16', // Lime
+  'SD': '#f43f5e',
+  'QM': '#10b981',
+  'PM': '#f59e0b',
+  'R&D': '#3b82f6',
+  'MM': '#8b5cf6',
+  'HCM': '#06b6d4',
+  'PP': '#84cc16',
+  'MED': '#ec4899',
+  'FICO': '#14b8a6',
   'Other': '#64748b'
 };
 
-const RANGE_CONFIGS = [
-  { id: '0-10', label: '0-10 Mandays', min: 0, max: 10, color: 'emerald' },
-  { id: '10-20', label: '10-20 Mandays', min: 10.0001, max: 20, color: 'blue' },
-  { id: '20-30', label: '20-30 Mandays', min: 20.0001, max: 30, color: 'amber' },
-  { id: '30-40', label: '30-40 Mandays', min: 30.0001, max: 40, color: 'orange' },
-  { id: '40-50', label: '40-50 Mandays', min: 40.0001, max: 50, color: 'rose' }
-];
-
 // --- ROBUST EXCEL COLUMN KEY ACCESSORS ---
-function getRowCorpPlant(row) {
-  return row['Corp/Plant'] || row['Corp'] || row['Plant'] || row['corp'] || row['plant'] || row['division'] || row['Division'] || 'Unknown';
+function getRobustRowValue(row, targetKeys, defaultValue = '') {
+  if (!row) return defaultValue;
+  for (const key of targetKeys) {
+    if (row[key] !== undefined && row[key] !== null) {
+      return String(row[key]).trim();
+    }
+  }
+  const cleanKey = (k) => String(k).toLowerCase().replace(/[\s\-_]/g, '');
+  const cleanTargetKeys = targetKeys.map(cleanKey);
+  for (const actualKey of Object.keys(row)) {
+    if (cleanTargetKeys.includes(cleanKey(actualKey))) {
+      const val = row[actualKey];
+      if (val !== undefined && val !== null) {
+        return String(val).trim();
+      }
+    }
+  }
+  return defaultValue;
+}
+
+function getRowLicense(row) {
+  return getRobustRowValue(row, ['License', 'license', 'license type', 'licenseid', 'license id'], 'Unknown');
 }
 
 function getRowDepartment(row) {
-  return row['Dept'] || row['Department'] || row['dept'] || row['department'] || 'Unknown';
+  return getRobustRowValue(row, ['Department', 'department', 'dept', 'dep', 'division', 'div'], 'Unknown');
 }
 
-function getRowCategory(row) {
-  return row['Cat'] || row['Category'] || row['cat'] || row['category'] || '';
+function getRowGroup(row) {
+  return getRobustRowValue(row, ['Group', 'group', 'user group', 'usergroup', 'grp'], '');
 }
 
-function getRowEmployeeId(row) {
-  return row['GenID'] || row['GenId'] || row['Employee ID'] || row['EmployeeID'] || row['id'] || row['ID'] || '';
+function getRowSAPID(row) {
+  return getRobustRowValue(row, ['SAPID', 'sapid', 'sap id', 'sap_id', 'id', 'user id', 'userid', 'emp id', 'empid', 'employee id'], '');
 }
 
-function getRowEmployeeName(row) {
-  return row['Name'] || row['name'] || row['Employee Name'] || row['EmployeeName'] || 'Unknown';
+function getRowUserName(row) {
+  return getRobustRowValue(row, ['Name', 'name', 'user name', 'username', 'employee name', 'emp name', 'full name', 'fullname'], 'Unknown');
 }
 
-function getRowCourseName(row) {
-  return row['cname'] || row['Course Name'] || row['CourseName'] || row['course_name'] || row['Course'] || row['course'] || 'Unknown';
+function getRowFunction(row) {
+  return getRobustRowValue(row, ['Function', 'function', 'role', 'job title', 'jobtitle', 'group', 'user group'], 'Unknown');
 }
 
-function getRowMandays(row) {
-  const val = row['mandays'] !== undefined ? row['mandays'] : (row['Mandays'] !== undefined ? row['Mandays'] : (row['manday'] !== undefined ? row['manday'] : row['Manday']));
-  return parseFloat(val) || 0;
+function getRowLastLogon(row) {
+  return getRobustRowValue(row, ['Last Logon', 'last logon', 'lastlogon', 'last_logon', 'logon', 'last login', 'lastlogin'], '-');
 }
-
-function getRowAttended(row) {
-  return row['attended'] || row['Attended'] || '';
-}
-
-// Default Google Sheets URL
-const DEFAULT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbytaI36PDf09D7O2RicMWEkGn-JXiew3zPL6bc3OLGKTc0klmd0gUj9ZCfdg2JvY9Sb/exec';
 
 // Function to convert Google Sheets URL to CSV export URL
 function getGoogleSheetsCsvUrl(urlStr) {
@@ -299,8 +336,8 @@ async function fetchGoogleSheetsData(sheetUrl) {
       } else if (result.csv) {
         // CSV response from Google Sheets
         const workbook = XLSX.read(result.csv, { type: 'string' });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
+        const sheetName = getBestSheetName(workbook);
+        const worksheet = workbook.Sheets[sheetName];
         parsedData = XLSX.utils.sheet_to_json(worksheet);
       }
     }
@@ -318,11 +355,7 @@ async function fetchGoogleSheetsData(sheetUrl) {
     // Update reset button visibility
     const resetBtn = document.getElementById('reset-btn');
     if (resetBtn) {
-      if (sheetUrl !== DEFAULT_SHEET_URL) {
-        resetBtn.classList.remove('hidden');
-      } else {
-        resetBtn.classList.add('hidden');
-      }
+      resetBtn.classList.remove('hidden');
     }
 
     initDashboard();
@@ -376,20 +409,46 @@ window.addEventListener('DOMContentLoaded', () => {
   // Setup Event Listeners
   setupEventListeners();
 
-  // Load URL from localStorage or default
-  // If the saved URL is the old default (stale), clear it so the new default takes effect
-  let savedUrl = localStorage.getItem('dashboard_sheet_url');
-  if (!savedUrl || savedUrl === 'https://script.google.com/a/macros/vitstudent.ac.in/s/AKfycbx4BgQYzPr7dDzF4zDCYkc3eANVHwxXn0ztHedVPu5Fa9ldh4MaARYjtixV21nHJPlS/exec') {
-    localStorage.removeItem('dashboard_sheet_url');
-    savedUrl = DEFAULT_SHEET_URL;
-  }
+  // Clear legacy default URL on startup
+  localStorage.removeItem('dashboard_sheet_url');
+  localStorage.removeItem('cached_sheet_data');
+  let savedUrl = null;
   const urlInput = document.getElementById('sheet-url-input');
   if (urlInput) {
-    urlInput.value = savedUrl;
+    urlInput.value = savedUrl || '';
   }
 
-  // Fetch data immediately
-  fetchGoogleSheetsData(savedUrl);
+  // Initialize with saved URL or fallback to local preloaded SAP data
+  if (savedUrl) {
+    fetchGoogleSheetsData(savedUrl);
+  } else {
+    const cachedDataStr = localStorage.getItem('cached_sheet_data');
+    if (cachedDataStr) {
+      try {
+        rawData = JSON.parse(cachedDataStr);
+        // Quick verification that cache contains some data
+        if (rawData.length > 0) {
+          // If cached URL was set, show reset button
+          const resetBtn = document.getElementById('reset-btn');
+          if (resetBtn && savedUrl) {
+            resetBtn.classList.remove('hidden');
+          }
+          initDashboard();
+          return;
+        }
+      } catch (parseErr) {
+        console.error('Failed to parse cached data:', parseErr);
+      }
+    }
+    
+    if (typeof window.PRELOADED_DATA !== 'undefined') {
+      rawData = window.PRELOADED_DATA;
+      initDashboard();
+    } else {
+      rawData = [];
+      initDashboard();
+    }
+  }
 });
 
 // Setup event handlers
@@ -402,13 +461,21 @@ function setupEventListeners() {
   const resetBtn = document.getElementById('reset-btn');
   resetBtn.addEventListener('click', () => {
     localStorage.removeItem('dashboard_sheet_url');
+    localStorage.removeItem('cached_sheet_data');
     const urlInput = document.getElementById('sheet-url-input');
     if (urlInput) {
-      urlInput.value = DEFAULT_SHEET_URL;
+      urlInput.value = '';
     }
     fileInput.value = '';
     resetBtn.classList.add('hidden');
-    fetchGoogleSheetsData(DEFAULT_SHEET_URL);
+    
+    if (typeof window.PRELOADED_DATA !== 'undefined') {
+      rawData = window.PRELOADED_DATA;
+      initDashboard();
+    } else {
+      rawData = [];
+      initDashboard();
+    }
   });
 
   // Google Sheets Sync
@@ -432,40 +499,13 @@ function setupEventListeners() {
   }
 
   // Filter Changes
-  document.getElementById('filter-corp').addEventListener('change', (e) => {
-    currentFilters.corp = e.target.value;
+  document.getElementById('filter-license').addEventListener('change', (e) => {
+    currentFilters.license = e.target.value;
     updateDashboard();
   });
   document.getElementById('filter-dept').addEventListener('change', (e) => {
     currentFilters.dept = e.target.value;
     updateDashboard();
-  });
-  document.getElementById('filter-attended').addEventListener('change', (e) => {
-    currentFilters.attended = e.target.value;
-    updateDashboard();
-  });
-
-
-  // Pie chart slice toggle (Group by Corp vs Group by Dept)
-  const btnGroupCorp = document.getElementById('toggle-slice-corp');
-  const btnGroupDept = document.getElementById('toggle-slice-dept');
-
-  btnGroupCorp.addEventListener('click', () => {
-    if (pieSliceGrouping !== 'corp') {
-      pieSliceGrouping = 'corp';
-      btnGroupCorp.classList.add('active');
-      btnGroupDept.classList.remove('active');
-      renderRangePieCharts();
-    }
-  });
-
-  btnGroupDept.addEventListener('click', () => {
-    if (pieSliceGrouping !== 'dept') {
-      pieSliceGrouping = 'dept';
-      btnGroupDept.classList.add('active');
-      btnGroupCorp.classList.remove('active');
-      renderRangePieCharts();
-    }
   });
 
 
@@ -476,10 +516,43 @@ function setupEventListeners() {
     if (e.target.id === 'drilldown-modal') closeModal();
   });
 
-  // Leadership Track category change event
-  document.getElementById('filter-leadership-cat').addEventListener('change', () => {
+  // SAP User Group Explorer filter category change event
+  document.getElementById('filter-explorer-license').addEventListener('change', () => {
+    groupCurrentPage = 1;
     renderLeadershipChart();
   });
+
+  // SAP User Group Explorer pagination events
+  const btnPrevGroups = document.getElementById('btn-prev-groups');
+  const btnNextGroups = document.getElementById('btn-next-groups');
+  if (btnPrevGroups && btnNextGroups) {
+    btnPrevGroups.addEventListener('click', () => {
+      if (groupCurrentPage > 1) {
+        groupCurrentPage--;
+        renderLeadershipChart();
+      }
+    });
+    btnNextGroups.addEventListener('click', () => {
+      groupCurrentPage++;
+      renderLeadershipChart();
+    });
+  }
+
+  // Input handler for editable purchased limits in category progress list
+  const progressContainer = document.getElementById('category-progress-container');
+  if (progressContainer) {
+    progressContainer.addEventListener('input', (e) => {
+      if (e.target.classList.contains('limit-input')) {
+        const lic = e.target.getAttribute('data-license');
+        let val = parseInt(e.target.value);
+        if (isNaN(val) || val < 0) {
+          val = 0;
+        }
+        localStorage.setItem(`sap_license_purchased_${lic}`, val);
+        updateDashboard();
+      }
+    });
+  }
 
   // ─── Settings Footer & Modals Listeners ─────────────────────────────────────
   
@@ -585,6 +658,69 @@ function setupEventListeners() {
     });
   }
 
+  // PDF Capture/Download — true full-page screenshot approach
+  const btnDownloadPdf = document.getElementById('btn-download-pdf');
+  if (btnDownloadPdf) {
+    btnDownloadPdf.addEventListener('click', async () => {
+      const originalLabel = btnDownloadPdf.textContent;
+      btnDownloadPdf.textContent = '⏳ Generating...';
+      btnDownloadPdf.disabled = true;
+
+      try {
+        const element = document.querySelector('.dashboard-wrapper');
+
+        // Step 1: Render the entire dashboard to a canvas (full scroll height)
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#0b0f19',
+          scrollX: 0,
+          scrollY: -window.scrollY,
+          windowWidth: document.documentElement.offsetWidth,
+          windowHeight: element.scrollHeight,
+          height: element.scrollHeight,
+          onclone: (clonedDoc) => {
+            // Ensure the cloned wrapper expands to full content height
+            const wrapper = clonedDoc.querySelector('.dashboard-wrapper');
+            if (wrapper) {
+              wrapper.style.maxWidth = 'none';
+              wrapper.style.overflow = 'visible';
+            }
+          }
+        });
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+        // Step 2: Build a PDF whose page dimensions exactly match the screenshot
+        // pdf coordinate system: px -> mm at 96 dpi
+        const pxToMm = (px) => px * 25.4 / 96;
+        const pageWidthMm  = pxToMm(canvas.width  / 2);  // /2 because scale:2
+        const pageHeightMm = pxToMm(canvas.height / 2);
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+          orientation: pageWidthMm > pageHeightMm ? 'landscape' : 'portrait',
+          unit: 'mm',
+          format: [pageWidthMm, pageHeightMm]
+        });
+
+        pdf.addImage(imgData, 'JPEG', 0, 0, pageWidthMm, pageHeightMm);
+
+        const today = new Date().toISOString().split('T')[0];
+        pdf.save(`SAPID_Dashboard_${today}.pdf`);
+
+        showToast('PDF downloaded successfully!');
+      } catch (err) {
+        console.error('PDF Generation failed:', err);
+        showToast('PDF generation failed: ' + err.message, 'error');
+        tauriInvoke('append_log', { level: 'error', message: `PDF export failed: ${err.message}` }).catch(console.error);
+      } finally {
+        btnDownloadPdf.textContent = originalLabel;
+        btnDownloadPdf.disabled = false;
+      }
+    });
+  }
+
   // Configuration Backup/Export
   const btnExport = document.getElementById('btn-export-config');
   if (btnExport) {
@@ -594,14 +730,14 @@ function setupEventListeners() {
           dashboard_sheet_url: localStorage.getItem('dashboard_sheet_url') || '',
           cached_sheet_data: JSON.parse(localStorage.getItem('cached_sheet_data') || '[]'),
           exported_at: new Date().toISOString(),
-          app: "SkillTrack Analyzer",
+          app: "SAPID License Analyzer",
           version: "1.0.0"
         };
         const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `skilltrack_config_${new Date().toISOString().split('T')[0]}.json`;
+        a.download = `sap_license_config_${new Date().toISOString().split('T')[0]}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -681,8 +817,8 @@ function handleFileUpload(e) {
     try {
       const data = new Uint8Array(evt.target.result);
       const workbook = XLSX.read(data, { type: 'array' });
-      const firstSheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[firstSheetName];
+      const sheetName = getBestSheetName(workbook);
+      const worksheet = workbook.Sheets[sheetName];
       const parsedData = XLSX.utils.sheet_to_json(worksheet);
 
       if (parsedData.length === 0) {
@@ -706,52 +842,56 @@ function handleFileUpload(e) {
   reader.readAsArrayBuffer(file);
 }
 
+// Aesthetics and modal header updates are statically handled in HTML now
+
 // Initialize components (options, dropdowns)
 function initDashboard() {
   // Populate filter options dynamically
-  const corps = new Set();
+  const licenses = new Set();
   const depts = new Set();
-  const cats = new Set();
 
   rawData.forEach(row => {
-    const corp = getRowCorpPlant(row);
+    const license = getRowLicense(row);
     const dept = getRowDepartment(row);
-    const cat = getRowCategory(row);
-    if (corp) corps.add(corp);
+    if (license) licenses.add(license);
     if (dept) depts.add(dept);
-    if (cat) cats.add(cat);
   });
 
-  // Populate Corp select
-  const corpSelect = document.getElementById('filter-corp');
-  corpSelect.textContent = '';
-  appendSafeOption(corpSelect, 'ALL', 'All Plants');
-  Array.from(corps).sort().forEach(corp => {
-    appendSafeOption(corpSelect, corp, corp);
-  });
+  // Populate License select
+  const licenseSelect = document.getElementById('filter-license');
+  if (licenseSelect) {
+    licenseSelect.textContent = '';
+    appendSafeOption(licenseSelect, 'ALL', 'All Licenses');
+    Array.from(licenses).sort().forEach(license => {
+      appendSafeOption(licenseSelect, license, license);
+    });
+  }
 
   // Populate Dept select
   const deptSelect = document.getElementById('filter-dept');
-  deptSelect.textContent = '';
-  appendSafeOption(deptSelect, 'ALL', 'All Departments');
-  Array.from(depts).sort().forEach(dept => {
-    appendSafeOption(deptSelect, dept, dept);
-  });
+  if (deptSelect) {
+    deptSelect.textContent = '';
+    appendSafeOption(deptSelect, 'ALL', 'All Departments');
+    Array.from(depts).sort().forEach(dept => {
+      appendSafeOption(deptSelect, dept, dept);
+    });
+  }
 
-  // Populate Leadership Track Category select dynamically
-  const catSelect = document.getElementById('filter-leadership-cat');
-  catSelect.textContent = '';
-  appendSafeOption(catSelect, 'ALL', 'All Categories');
-  Array.from(cats).sort().forEach(cat => {
-    appendSafeOption(catSelect, cat, cat);
-  });
-  catSelect.value = 'ALL';
+  // Populate SAP User Group Explorer filter dynamically
+  const explorerLicenseSelect = document.getElementById('filter-explorer-license');
+  if (explorerLicenseSelect) {
+    explorerLicenseSelect.textContent = '';
+    appendSafeOption(explorerLicenseSelect, 'ALL', 'All Licenses');
+    Array.from(licenses).sort().forEach(license => {
+      appendSafeOption(explorerLicenseSelect, license, license);
+    });
+    explorerLicenseSelect.value = 'ALL';
+  }
 
   // Reset Filters to ALL
-  currentFilters = { corp: 'ALL', dept: 'ALL', attended: 'ALL' };
-  document.getElementById('filter-corp').value = 'ALL';
-  document.getElementById('filter-dept').value = 'ALL';
-  document.getElementById('filter-attended').value = 'ALL';
+  currentFilters = { license: 'ALL', dept: 'ALL' };
+  if (licenseSelect) licenseSelect.value = 'ALL';
+  if (deptSelect) deptSelect.value = 'ALL';
 
   updateDashboard();
 }
@@ -760,126 +900,105 @@ function initDashboard() {
 function updateDashboard() {
   // 1. Filter Raw Data
   const filteredRows = rawData.filter(row => {
-    const matchCorp = currentFilters.corp === 'ALL' || getRowCorpPlant(row) === currentFilters.corp;
+    const matchLicense = currentFilters.license === 'ALL' || getRowLicense(row) === currentFilters.license;
     const matchDept = currentFilters.dept === 'ALL' || getRowDepartment(row) === currentFilters.dept;
-    const matchAttended = currentFilters.attended === 'ALL' || getRowAttended(row) === currentFilters.attended;
-    return matchCorp && matchDept && matchAttended;
+    return matchLicense && matchDept;
   });
 
-  // 2. Aggregate Employees
-  const employeeMap = {};
-  filteredRows.forEach(row => {
-    const genId = getRowEmployeeId(row) || `EMP-${getRowEmployeeName(row)}`;
-    const name = getRowEmployeeName(row);
-    const corp = getRowCorpPlant(row);
-    const dept = getRowDepartment(row);
-    const mandays = getRowMandays(row);
-    const attended = getRowAttended(row) === 'Yes';
-
-    if (!employeeMap[genId]) {
-      employeeMap[genId] = {
-        id: genId,
-        name: name,
-        corp: corp,
-        dept: dept,
-        mandaysSum: 0,
-        coursesTotal: 0,
-        coursesAttended: 0
-      };
-    }
-
-    employeeMap[genId].mandaysSum += mandays;
-    employeeMap[genId].coursesTotal += 1;
-    if (attended) {
-      employeeMap[genId].coursesAttended += 1;
-    }
+  // 2. Map to employees list (logon recency)
+  employeesList = filteredRows.map(row => {
+    return {
+      id: getRowSAPID(row),
+      name: getRowUserName(row),
+      license: getRowLicense(row),
+      dept: getRowDepartment(row)
+    };
   });
-
-  employeesList = Object.values(employeeMap);
 
   // 3. Render KPIs
   renderKPIs(filteredRows, employeesList);
 
   // 4. Render Main Charts
-  renderPlantChart(filteredRows);
+  renderLicenseChart(filteredRows);
   renderDeptChart(filteredRows);
 
-  // 5. Render Range Pie Charts (based on employees list)
-  renderRangePieCharts();
-
-  // Render Leadership Track Segment
+  // Render User Group Explorer
   renderLeadershipChart();
 
-  // Render TQM and Category Progress on the right column
+  // Render License Distribution Progress on the right column
   renderRightColumnAnalytics(filteredRows);
-
-
 }
 
 // Render KPI Summary Cards
 function renderKPIs(rows, emps) {
-  // Total Mandays
-  const totalMandays = rows.reduce((acc, row) => acc + getRowMandays(row), 0);
-  document.getElementById('kpi-total-mandays').innerText = totalMandays.toFixed(1);
+  // Total Users (Allocated)
+  document.getElementById('kpi-total-users').innerText = rows.length;
 
-  // Total Unique Employees
-  document.getElementById('kpi-total-employees').innerText = emps.length;
+  // Compute total purchased licenses limit
+  let totalPurchased = 0;
+  const uniqueLicenses = ['AX', 'AY', 'FX', 'HC', 'HD'];
+  uniqueLicenses.forEach(lic => {
+    const stored = localStorage.getItem(`sap_license_purchased_${lic}`);
+    const limit = stored ? parseInt(stored) : (DEFAULT_LICENSE_PURCHASED[lic] || 150);
+    totalPurchased += limit;
+  });
+  document.getElementById('kpi-total-purchased').innerText = totalPurchased;
 
-  // Average Mandays per Employee
-  const avgMandays = emps.length > 0 ? (totalMandays / emps.length) : 0;
-  document.getElementById('kpi-avg-mandays').innerText = avgMandays.toFixed(1);
+  // Available Licenses: Total Purchased - Total Users (Allocated)
+  const totalAllocated = rawData.length;
+  const available = Math.max(0, totalPurchased - totalAllocated);
+  document.getElementById('kpi-available-licenses').innerText = available;
 
-  // Find Top Plant (highest sum of mandays)
-  const plantSums = {};
+  // Find Top License
+  const licenseCounts = {};
   rows.forEach(row => {
-    const plant = getRowCorpPlant(row);
-    if (plant) {
-      plantSums[plant] = (plantSums[plant] || 0) + getRowMandays(row);
+    const license = getRowLicense(row);
+    if (license) {
+      licenseCounts[license] = (licenseCounts[license] || 0) + 1;
     }
   });
 
-  let topPlant = '-';
-  let maxPlantSum = 0;
-  Object.keys(plantSums).forEach(p => {
-    if (plantSums[p] > maxPlantSum) {
-      maxPlantSum = plantSums[p];
-      topPlant = p;
+  let topLicense = '-';
+  let maxLicenseCount = 0;
+  Object.keys(licenseCounts).forEach(l => {
+    if (licenseCounts[l] > maxLicenseCount) {
+      maxLicenseCount = licenseCounts[l];
+      topLicense = l;
     }
   });
   
-  if (topPlant !== '-') {
-    document.getElementById('kpi-top-plant').innerText = `${topPlant} (${maxPlantSum.toFixed(1)} d)`;
+  if (topLicense !== '-') {
+    document.getElementById('kpi-top-license').innerText = `${topLicense} (${maxLicenseCount} users)`;
   } else {
-    document.getElementById('kpi-top-plant').innerText = '-';
+    document.getElementById('kpi-top-license').innerText = '-';
   }
 }
 
-// Render First Graph: Sum of Mandays for each Corp/Plant
-function renderPlantChart(rows) {
+// Render First Graph: License Distribution
+function renderLicenseChart(rows) {
   if (typeof Chart === 'undefined') return;
 
-  // Aggregate sum of mandays by Plant
-  const plantSums = {};
+  const licenseCounts = {};
   rows.forEach(row => {
-    const plant = getRowCorpPlant(row);
-    plantSums[plant] = (plantSums[plant] || 0) + getRowMandays(row);
+    const license = getRowLicense(row);
+    licenseCounts[license] = (licenseCounts[license] || 0) + 1;
   });
 
-  const labels = Object.keys(plantSums).sort();
-  const dataValues = labels.map(label => plantSums[label]);
-  const colors = labels.map(label => CORP_COLORS[label] || CORP_COLORS['Other']);
+  const labels = Object.keys(licenseCounts).sort();
+  const dataValues = labels.map(label => licenseCounts[label]);
+  const colors = labels.map(label => LICENSE_COLORS[label] || LICENSE_COLORS['Other']);
 
-  if (plantChartInstance) {
-    plantChartInstance.destroy();
+  if (licenseChartInstance) {
+    licenseChartInstance.destroy();
   }
 
-  const ctx = document.getElementById('chart-plant-mandays').getContext('2d');
-  plantChartInstance = new Chart(ctx, {
+  const ctx = document.getElementById('chart-license-distribution').getContext('2d');
+  licenseChartInstance = new Chart(ctx, {
     type: 'bar',
     data: {
       labels: labels,
       datasets: [{
-        label: 'Sum of Mandays',
+        label: 'Users count',
         data: dataValues,
         backgroundColor: colors,
         borderRadius: 6,
@@ -894,7 +1013,7 @@ function renderPlantChart(rows) {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: (context) => ` Total Mandays: ${context.raw.toFixed(1)}`
+            label: (context) => ` Assigned Users: ${context.raw}`
           }
         }
       },
@@ -907,7 +1026,7 @@ function renderPlantChart(rows) {
           grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
           beginAtZero: true,
           ticks: {
-            callback: (val) => `${val} d`
+            precision: 0
           }
         }
       }
@@ -915,32 +1034,31 @@ function renderPlantChart(rows) {
   });
 }
 
-// Render Second Graph of Segment 1: Department breakdown
+// Render Second Graph of Segment 1: Department distribution
 function renderDeptChart(rows) {
   if (typeof Chart === 'undefined') return;
 
-  const deptSums = {};
+  const deptCounts = {};
   rows.forEach(row => {
     const dept = getRowDepartment(row);
-    deptSums[dept] = (deptSums[dept] || 0) + getRowMandays(row);
+    deptCounts[dept] = (deptCounts[dept] || 0) + 1;
   });
 
-  // Sort departments by descending mandays
-  const labels = Object.keys(deptSums).sort((a,b) => deptSums[b] - deptSums[a]);
-  const dataValues = labels.map(label => deptSums[label]);
+  const labels = Object.keys(deptCounts).sort((a,b) => deptCounts[b] - deptCounts[a]);
+  const dataValues = labels.map(label => deptCounts[label]);
   const colors = labels.map(label => DEPT_COLORS[label] || DEPT_COLORS['Other']);
 
   if (deptChartInstance) {
     deptChartInstance.destroy();
   }
 
-  const ctx = document.getElementById('chart-dept-mandays').getContext('2d');
+  const ctx = document.getElementById('chart-dept-distribution').getContext('2d');
   deptChartInstance = new Chart(ctx, {
     type: 'bar',
     data: {
       labels: labels,
       datasets: [{
-        label: 'Sum of Mandays',
+        label: 'Users count',
         data: dataValues,
         backgroundColor: colors,
         borderRadius: 6,
@@ -956,14 +1074,17 @@ function renderDeptChart(rows) {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: (context) => ` Total Mandays: ${context.raw.toFixed(1)}`
+            label: (context) => ` Users: ${context.raw}`
           }
         }
       },
       scales: {
         x: {
           grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
-          beginAtZero: true
+          beginAtZero: true,
+          ticks: {
+            precision: 0
+          }
         },
         y: {
           grid: { display: false, drawBorder: false },
@@ -974,459 +1095,219 @@ function renderDeptChart(rows) {
   });
 }
 
-// Helper to compute dynamic ranges based on employee mandays
-function getDynamicRangeConfigs(maxMandays) {
-  if (maxMandays <= 50) {
-    return [
-      { id: '0-10', label: '0-10 Mandays', min: 0, max: 10, color: 'emerald' },
-      { id: '10-20', label: '10-20 Mandays', min: 10.0001, max: 20, color: 'blue' },
-      { id: '20-30', label: '20-30 Mandays', min: 20.0001, max: 30, color: 'amber' },
-      { id: '30-40', label: '30-40 Mandays', min: 30.0001, max: 40, color: 'orange' },
-      { id: '40-50', label: '40-50 Mandays', min: 40.0001, max: 50, color: 'rose' }
-    ];
-  }
-  
-  // Scale intervals dynamically. Round interval up to nearest 10 for clean visual ranges.
-  const interval = Math.ceil(maxMandays / 5 / 10) * 10;
-  const configs = [];
-  const colors = ['emerald', 'blue', 'amber', 'orange', 'rose'];
-  
-  for (let i = 0; i < 5; i++) {
-    const min = i * interval;
-    const max = (i + 1) * interval;
-    configs.push({
-      id: `${min}-${max}`,
-      label: `${min}-${max} Mandays`,
-      min: i === 0 ? min : min + 0.0001,
-      max: max,
-      color: colors[i]
-    });
-  }
-  return configs;
-}
-
-// Render dynamic range pie charts representing intervals
-function renderRangePieCharts() {
-  const container = document.getElementById('ranges-pies-container');
-  if (!container) return;
-
-  // 1. Find max mandays to determine scaling boundaries
-  const maxMandays = employeesList.reduce((max, emp) => Math.max(max, emp.mandaysSum), 0);
-  
-  // 2. Generate range configs
-  const rangeConfigs = getDynamicRangeConfigs(maxMandays);
-
-  // 3. Clear container and recreate cards dynamically
-  container.innerHTML = '';
-  
-  rangeConfigs.forEach(range => {
-    const cardEl = document.createElement('div');
-    cardEl.className = 'glass-card pie-card';
-    cardEl.id = `card-range-${range.id}`;
-    
-    // Choose bullet icon color
-    const bullet = range.color === 'emerald' ? '🟢' : range.color === 'blue' ? '🔵' : range.color === 'amber' ? '🟡' : range.color === 'orange' ? '🟠' : '🔴';
-    
-    cardEl.innerHTML = `
-      <div class="pie-card-header">
-        <span class="pie-card-title">${bullet} ${range.label}</span>
-        <span class="pie-card-badge" id="badge-range-${range.id}">0 Employees</span>
-      </div>
-      <div class="chart-container-donut">
-        <canvas id="chart-range-${range.id}"></canvas>
-      </div>
-    `;
-    container.appendChild(cardEl);
-  });
-
-  // 4. Render chart canvases
-  rangeConfigs.forEach(range => {
-    // Find employees whose mandaysSum fits in this range
-    const employeesInRange = employeesList.filter(emp => {
-      const s = emp.mandaysSum;
-      return s >= range.min && s <= range.max;
-    });
-
-    // Update Badge text
-    const badge = document.getElementById(`badge-range-${range.id}`);
-    if (badge) {
-      badge.innerText = `${employeesInRange.length} Employee${employeesInRange.length !== 1 ? 's' : ''}`;
-    }
-
-    const canvas = document.getElementById(`chart-range-${range.id}`);
-    const cardEl = document.getElementById(`card-range-${range.id}`);
-
-    // If there are no employees in this range, display empty state and skip drawing
-    if (employeesInRange.length === 0) {
-      if (rangeChartInstances[range.id]) {
-        rangeChartInstances[range.id].destroy();
-        delete rangeChartInstances[range.id];
-      }
-      
-      canvas.style.display = 'none';
-      const emptyState = document.createElement('div');
-      emptyState.className = 'pie-empty-state';
-      emptyState.innerHTML = `<i>🫙</i><p>No employees in this range</p>`;
-      cardEl.appendChild(emptyState);
-      return;
-    }
-
-    // Group employees in this range by Plant or Department depending on current toggle
-    const sliceCounts = {};
-    employeesInRange.forEach(emp => {
-      const key = pieSliceGrouping === 'corp' ? emp.corp : emp.dept;
-      sliceCounts[key] = (sliceCounts[key] || 0) + 1;
-    });
-
-    const labels = Object.keys(sliceCounts).sort();
-    const dataValues = labels.map(label => sliceCounts[label]);
-    
-    // Choose appropriate color palette
-    const colors = labels.map(label => {
-      if (pieSliceGrouping === 'corp') {
-        return CORP_COLORS[label] || CORP_COLORS['Other'];
-      } else {
-        return DEPT_COLORS[label] || DEPT_COLORS['Other'];
-      }
-    });
-
-    if (rangeChartInstances[range.id]) {
-      rangeChartInstances[range.id].destroy();
-    }
-
-    if (typeof Chart === 'undefined') return;
-
-    const ctx = canvas.getContext('2d');
-    rangeChartInstances[range.id] = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: labels,
-        datasets: [{
-          data: dataValues,
-          backgroundColor: colors,
-          borderWidth: 2,
-          borderColor: '#111827', // Card background color
-          hoverOffset: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '60%',
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              boxWidth: 10,
-              padding: 10,
-              font: { size: 9 }
-            }
-          },
-          tooltip: {
-            callbacks: {
-              label: (context) => ` ${context.label}: ${context.raw} employee${context.raw !== 1 ? 's' : ''}`
-            }
-          }
-        },
-        onClick: (evt, activeElements) => {
-          if (activeElements.length > 0) {
-            const index = activeElements[0].index;
-            const clickedLabel = labels[index];
-            showDrilldownDetail(range, pieSliceGrouping, clickedLabel, employeesInRange);
-          }
-        }
-      }
-    });
-  });
-}
-
-// Open modal detailing employees in a specific slice (range + plant/dept)
-function showDrilldownDetail(rangeInfo, groupType, groupValue, employeesInRange) {
-  // Filter employees belonging to the clicked group (e.g. Corp 'H0' or Dept 'IT')
-  const detailsList = employeesInRange.filter(emp => {
-    const val = groupType === 'corp' ? emp.corp : emp.dept;
-    return val === groupValue;
-  });
-
-  // Get employee IDs in detailsList
-  const employeeIds = new Set(detailsList.map(emp => emp.id));
-
-  // Filter rawData to matching rows under current active filters and matching employee IDs
-  const rawRowsList = rawData.filter(row => {
-    const genId = getRowEmployeeId(row) || `EMP-${getRowEmployeeName(row)}`;
-    if (!employeeIds.has(genId)) return false;
-
-    const matchCorp = currentFilters.corp === 'ALL' || getRowCorpPlant(row) === currentFilters.corp;
-    const matchDept = currentFilters.dept === 'ALL' || getRowDepartment(row) === currentFilters.dept;
-    const matchAttended = currentFilters.attended === 'ALL' || getRowAttended(row) === currentFilters.attended;
-    return matchCorp && matchDept && matchAttended;
-  });
-
-  // Sort them by Department
-  rawRowsList.sort((a, b) => {
-    const deptA = getRowDepartment(a);
-    const deptB = getRowDepartment(b);
-    if (deptA !== deptB) return deptA.localeCompare(deptB);
-    const nameA = getRowEmployeeName(a);
-    const nameB = getRowEmployeeName(b);
-    return nameA.localeCompare(nameB);
-  });
-
-  // Populate Modal
-  const modalTitle = document.getElementById('modal-title');
-  const modalSubtitle = document.getElementById('modal-subtitle');
-  const modalTableBody = document.getElementById('modal-table-body');
-
-  modalTitle.innerText = `${rangeInfo.label} Breakdown`;
-  modalSubtitle.innerText = `${groupType === 'corp' ? 'Plant' : 'Department'} : ${groupValue} (${rawRowsList.length} record${rawRowsList.length !== 1 ? 's' : ''}, sorted by Department)`;
-
-  modalTableBody.innerHTML = '';
-  rawRowsList.forEach(row => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td style="padding: 0.8rem 1rem;">${escapeHTML(row.Sno || '-')}</td>
-      <td style="padding: 0.8rem 1rem; font-weight: 600;">${escapeHTML(getRowEmployeeId(row))}</td>
-      <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowEmployeeName(row))}</td>
-      <td style="padding: 0.8rem 1rem;">${escapeHTML(row.Des || row['Designation'] || row['des'] || row['designation'] || '-')}</td>
-      <td style="padding: 0.8rem 1rem;"><span class="badge-dept">${escapeHTML(getRowDepartment(row))}</span></td>
-      <td style="padding: 0.8rem 1rem;"><span class="badge-plant">${escapeHTML(getRowCorpPlant(row))}</span></td>
-      <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowCategory(row) || '-')}</td>
-      <td style="padding: 0.8rem 1rem; font-size: 0.85rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHTML(getRowCourseName(row))}">${escapeHTML(getRowCourseName(row))}</td>
-      <td style="padding: 0.8rem 1rem;">${escapeHTML(row.fd || row['From Date'] || row['fd'] || row['from_date'] || '-')}</td>
-      <td style="padding: 0.8rem 1rem;">${escapeHTML(row.ed || row['To Date'] || row['ed'] || row['to_date'] || '-')}</td>
-      <td style="padding: 0.8rem 1rem; font-size: 0.85rem;">${escapeHTML(row.organisor || row['Organisor'] || row['Organizer'] || row['organizer'] || '-')}</td>
-      <td style="padding: 0.8rem 1rem; text-align: right; font-weight: 700; color: #38bdf8;">${escapeHTML(getRowMandays(row).toFixed(1))}</td>
-      <td style="padding: 0.8rem 1rem; text-align: center;">
-        <span style="color: ${getRowAttended(row) === 'Yes' ? '#10b981' : '#f43f5e'}; font-weight: 600;">
-          ${escapeHTML(getRowAttended(row) || 'No')}
-        </span>
-      </td>
-    `;
-    modalTableBody.appendChild(tr);
-  });
-
-  // Show Modal
-  document.getElementById('drilldown-modal').classList.add('active');
-}
-
 function closeModal() {
   document.getElementById('drilldown-modal').classList.remove('active');
 }
 
-
-
-// Render Leadership Track Segment: displays courses as cards/buttons
+// Render User Group Explorer: displays groups as buttons
 function renderLeadershipChart() {
-  const selectedCat = document.getElementById('filter-leadership-cat').value;
+  const selectedCat = document.getElementById('filter-explorer-license').value;
 
-  // Filter raw data by current global filters (Plant, Attended, Search) and local Category filter
   const filteredRows = rawData.filter(row => {
-    const matchCorp = currentFilters.corp === 'ALL' || getRowCorpPlant(row) === currentFilters.corp;
+    const matchLicense = currentFilters.license === 'ALL' || getRowLicense(row) === currentFilters.license;
     const matchDept = currentFilters.dept === 'ALL' || getRowDepartment(row) === currentFilters.dept;
-    const matchAttended = currentFilters.attended === 'ALL' || getRowAttended(row) === currentFilters.attended;
-    const matchCat = selectedCat === 'ALL' || getRowCategory(row) === selectedCat;
-    return matchCorp && matchDept && matchAttended && matchCat;
+    const matchCat = selectedCat === 'ALL' || getRowLicense(row) === selectedCat;
+    return matchLicense && matchDept && matchCat;
   });
 
-  // Count unique persons (GenID) per Course Name (cname) and aggregate employee lists
-  const courseData = {};
+  const groupData = {};
   filteredRows.forEach(row => {
-    const course = getRowCourseName(row);
-    if (!course) return;
-    const genId = getRowEmployeeId(row) || `EMP-${getRowEmployeeName(row)}`;
-    const name = getRowEmployeeName(row);
-    const corp = getRowCorpPlant(row);
+    const groupName = getRowFunction(row);
+    if (!groupName) return;
+    const sapId = getRowSAPID(row);
+    const name = getRowUserName(row);
+    const license = getRowLicense(row);
     const dept = getRowDepartment(row);
 
-    if (!courseData[course]) {
-      courseData[course] = {
-        name: course,
+    if (!groupData[groupName]) {
+      groupData[groupName] = {
+        name: groupName,
         employeeMap: {}
       };
     }
 
-    if (!courseData[course].employeeMap[genId]) {
-      courseData[course].employeeMap[genId] = {
-        id: genId,
+    if (!groupData[groupName].employeeMap[sapId]) {
+      groupData[groupName].employeeMap[sapId] = {
+        id: sapId,
         name: name,
-        corp: corp,
+        corp: license,
         dept: dept
       };
     }
   });
 
-  const courses = Object.keys(courseData).sort();
+  const groups = Object.keys(groupData).sort();
 
-  // Populate dynamic course buttons
-  const buttonsContainer = document.getElementById('course-buttons-container');
+  const buttonsContainer = document.getElementById('group-buttons-container');
   buttonsContainer.innerHTML = '';
 
-  if (courses.length === 0) {
+  const prevBtn = document.getElementById('btn-prev-groups');
+  const nextBtn = document.getElementById('btn-next-groups');
+  const pageInfo = document.getElementById('group-page-info');
+
+  if (groups.length === 0) {
     buttonsContainer.innerHTML = `
       <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 2rem 0;">
-        No courses found in this category
+        No groups found for this license
       </div>
     `;
-    // Clear right side
-    document.getElementById('selected-course-title').innerText = 'Enrolled Employees';
-    document.getElementById('selected-course-subtitle').innerText = 'Select a course to view details';
-    document.getElementById('leadership-employees-body').innerHTML = `
+    document.getElementById('selected-group-title').innerText = 'Assigned Users';
+    document.getElementById('selected-group-subtitle').innerText = 'Select a group to view details';
+    document.getElementById('explorer-users-body').innerHTML = `
       <tr>
         <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 2rem 0; font-size: 0.85rem;">
-          No courses available
+          No groups available
         </td>
       </tr>
     `;
+    if (prevBtn) prevBtn.disabled = true;
+    if (nextBtn) nextBtn.disabled = true;
+    if (pageInfo) pageInfo.innerText = 'Page 1 of 1';
     return;
   }
 
-  // Reset or bound-check selected course
-  if (!selectedLeadershipCourse || !courses.includes(selectedLeadershipCourse)) {
-    selectedLeadershipCourse = courses[0];
+  // Calculate pages for groups
+  const totalGroupPages = Math.ceil(groups.length / groupPageSize) || 1;
+  if (groupCurrentPage > totalGroupPages) {
+    groupCurrentPage = totalGroupPages;
+  }
+  if (groupCurrentPage < 1) {
+    groupCurrentPage = 1;
   }
 
-  courses.forEach((courseName, index) => {
-    const count = Object.keys(courseData[courseName].employeeMap).length;
+  // Update button states and text
+  if (prevBtn) prevBtn.disabled = groupCurrentPage === 1;
+  if (nextBtn) nextBtn.disabled = groupCurrentPage === totalGroupPages;
+  if (pageInfo) pageInfo.innerText = `Page ${groupCurrentPage} of ${totalGroupPages}`;
+
+  const startIndex = (groupCurrentPage - 1) * groupPageSize;
+  const endIndex = Math.min(startIndex + groupPageSize, groups.length);
+  const pageGroups = groups.slice(startIndex, endIndex);
+
+  // Set selected group to first group of current page if not on the page or not valid
+  if (!selectedExplorerGroup || !groups.includes(selectedExplorerGroup) || !pageGroups.includes(selectedExplorerGroup)) {
+    selectedExplorerGroup = pageGroups[0];
+  }
+
+  pageGroups.forEach((groupName, index) => {
+    const count = Object.keys(groupData[groupName].employeeMap).length;
     const btn = document.createElement('div');
-    btn.className = `course-card-btn ${selectedLeadershipCourse === courseName ? 'active' : ''}`;
+    btn.className = `group-card-btn ${selectedExplorerGroup === groupName ? 'active' : ''}`;
     btn.innerHTML = `
-      <span class="course-btn-title">${escapeHTML(courseName)}</span>
-      <span class="course-btn-value" id="leadership-course-val-${index}">0</span>
+      <span class="group-btn-title">${escapeHTML(groupName)}</span>
+      <span class="group-btn-value" id="explorer-group-val-${index}">0</span>
     `;
 
-    // Click handler to select course and render employees on right side
     btn.addEventListener('click', () => {
-      // Update active styling
-      const allBtns = buttonsContainer.querySelectorAll('.course-card-btn');
+      const allBtns = buttonsContainer.querySelectorAll('.group-card-btn');
       allBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
-      selectedLeadershipCourse = courseName;
-      renderLeadershipEmployeesList(courseData[courseName], selectedCat);
+      selectedExplorerGroup = groupName;
+      renderExplorerEmployeesList(groupData[groupName], selectedCat);
     });
 
     buttonsContainer.appendChild(btn);
 
-    // Animate count-up for course numbers using internal element query
-    const valEl = btn.querySelector('.course-btn-value');
+    const valEl = btn.querySelector('.group-btn-value');
     animateCountValue(valEl, 0, count, 600 + index * 100);
   });
 
-  // Render employee list for selected course on right side
-  renderLeadershipEmployeesList(courseData[selectedLeadershipCourse], selectedCat);
+  renderExplorerEmployeesList(groupData[selectedExplorerGroup], selectedCat);
 }
 
-// Render right side enrolled employees list for selected course
-function renderLeadershipEmployeesList(course, selectedCat) {
-  const titleEl = document.getElementById('selected-course-title');
-  const subtitleEl = document.getElementById('selected-course-subtitle');
-  const tbody = document.getElementById('leadership-employees-body');
+// Render right side users list for selected group
+function renderExplorerEmployeesList(groupInfo, selectedCat) {
+  const titleEl = document.getElementById('selected-group-title');
+  const subtitleEl = document.getElementById('selected-group-subtitle');
+  const tbody = document.getElementById('explorer-users-body');
 
-  if (!course) {
-    titleEl.innerText = 'Enrolled Employees';
-    subtitleEl.innerText = 'Select a course to view details';
+  if (!groupInfo) {
+    titleEl.innerText = 'Assigned Users';
+    subtitleEl.innerText = 'Select a group to view details';
     tbody.innerHTML = `
       <tr>
         <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 2rem 0; font-size: 0.85rem;">
-          No course selected
+          No group selected
         </td>
       </tr>
     `;
     return;
   }
 
-  const courseName = course.name;
-  const employeeMap = course.employeeMap;
+  const groupName = groupInfo.name;
+  const employeeMap = groupInfo.employeeMap;
   const employees = Object.values(employeeMap);
 
-  titleEl.innerText = courseName;
-  subtitleEl.innerText = `Unique Enrolled Persons: ${employees.length} (Click employee row to view full details)`;
+  titleEl.innerText = groupName;
+  subtitleEl.innerText = `Unique Assigned Persons: ${employees.length} (Click user row to view details)`;
 
   tbody.innerHTML = '';
   if (employees.length === 0) {
     tbody.innerHTML = `
       <tr>
         <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 2rem 0; font-size: 0.85rem;">
-          No employees enrolled
+          No users assigned
         </td>
       </tr>
     `;
     return;
   }
 
-  // Sort employees by Department
-  employees.sort((a, b) => {
-    return a.dept.localeCompare(b.dept);
-  });
+  employees.sort((a, b) => a.dept.localeCompare(b.dept));
 
   employees.forEach(emp => {
     const tr = document.createElement('tr');
     tr.className = 'clickable-row';
     tr.innerHTML = `
       <td><span style="font-weight: 600;">${escapeHTML(emp.name)}</span> <span style="color: var(--text-secondary); font-size: 0.75rem; margin-left: 0.4rem;">(${escapeHTML(emp.id)})</span></td>
-      <td><span class="badge-plant">${escapeHTML(emp.corp)}</span></td>
+      <td><span class="badge-license">${escapeHTML(emp.corp)}</span></td>
       <td><span class="badge-dept">${escapeHTML(emp.dept)}</span></td>
     `;
 
-    // Click handler to open entire row drilldown modal for this employee, course and category
     tr.addEventListener('click', () => {
-      // Find all raw rows in the dataset matching: employee ID, course name, category, and other active filters
       const matchingRows = rawData.filter(row => {
-        const genId = getRowEmployeeId(row) || `EMP-${getRowEmployeeName(row)}`;
-        if (genId !== emp.id) return false;
+        const sapId = getRowSAPID(row);
+        if (sapId !== emp.id) return false;
 
-        const matchCorp = currentFilters.corp === 'ALL' || getRowCorpPlant(row) === currentFilters.corp;
+        const matchLicense = currentFilters.license === 'ALL' || getRowLicense(row) === currentFilters.license;
         const matchDept = currentFilters.dept === 'ALL' || getRowDepartment(row) === currentFilters.dept;
-        const matchAttended = currentFilters.attended === 'ALL' || getRowAttended(row) === currentFilters.attended;
-        const matchCat = selectedCat === 'ALL' || getRowCategory(row) === selectedCat;
-        const matchCourse = getRowCourseName(row) === courseName;
-        return matchCorp && matchDept && matchAttended && matchCat && matchCourse;
+        const matchCat = selectedCat === 'ALL' || getRowLicense(row) === selectedCat;
+        const matchGroup = getRowFunction(row) === groupName;
+        return matchLicense && matchDept && matchCat && matchGroup;
       });
 
-      // Sort by Department
       matchingRows.sort((a, b) => {
         const deptA = getRowDepartment(a);
         const deptB = getRowDepartment(b);
         if (deptA !== deptB) return deptA.localeCompare(deptB);
-        const nameA = getRowEmployeeName(a);
-        const nameB = getRowEmployeeName(b);
+        const nameA = getRowUserName(a);
+        const nameB = getRowUserName(b);
         return nameA.localeCompare(nameB);
       });
 
-      // Show in modal
       const modalTitle = document.getElementById('modal-title');
       const modalSubtitle = document.getElementById('modal-subtitle');
       const modalTableBody = document.getElementById('modal-table-body');
 
-      modalTitle.innerText = `Leadership Track: Enrolment Record`;
-      modalSubtitle.innerText = `Employee: ${emp.name} | Course: ${courseName} (${matchingRows.length} record${matchingRows.length !== 1 ? 's' : ''}, sorted by Department)`;
+      modalTitle.innerText = 'SAP User Group Assignment';
+      modalSubtitle.innerText = `User: ${emp.name} | Group: ${groupName} (sorted by Department)`;
 
       modalTableBody.innerHTML = '';
       matchingRows.forEach(row => {
         const trModal = document.createElement('tr');
         trModal.innerHTML = `
-          <td style="padding: 0.8rem 1rem;">${escapeHTML(row.Sno || '-')}</td>
-          <td style="padding: 0.8rem 1rem; font-weight: 600;">${escapeHTML(getRowEmployeeId(row))}</td>
-          <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowEmployeeName(row))}</td>
-          <td style="padding: 0.8rem 1rem;">${escapeHTML(row.Des || row['Designation'] || row['des'] || row['designation'] || '-')}</td>
+          <td style="padding: 0.8rem 1rem; font-weight: 600;">${escapeHTML(getRowSAPID(row))}</td>
+          <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowUserName(row))}</td>
+          <td style="padding: 0.8rem 1rem;"><span class="badge-license">${escapeHTML(getRowLicense(row))}</span></td>
           <td style="padding: 0.8rem 1rem;"><span class="badge-dept">${escapeHTML(getRowDepartment(row))}</span></td>
-          <td style="padding: 0.8rem 1rem;"><span class="badge-plant">${escapeHTML(getRowCorpPlant(row))}</span></td>
-          <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowCategory(row) || '-')}</td>
-          <td style="padding: 0.8rem 1rem; font-size: 0.85rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHTML(getRowCourseName(row))}">${escapeHTML(getRowCourseName(row))}</td>
-          <td style="padding: 0.8rem 1rem;">${escapeHTML(row.fd || row['From Date'] || row['fd'] || row['from_date'] || '-')}</td>
-          <td style="padding: 0.8rem 1rem;">${escapeHTML(row.ed || row['To Date'] || row['ed'] || row['to_date'] || '-')}</td>
-          <td style="padding: 0.8rem 1rem; font-size: 0.85rem;">${escapeHTML(row.organisor || row['Organisor'] || row['Organizer'] || row['organizer'] || '-')}</td>
-          <td style="padding: 0.8rem 1rem; text-align: right; font-weight: 700; color: #38bdf8;">${escapeHTML(getRowMandays(row).toFixed(1))}</td>
-          <td style="padding: 0.8rem 1rem; text-align: center;">
-            <span style="color: ${getRowAttended(row) === 'Yes' ? '#10b981' : '#f43f5e'}; font-weight: 600;">
-              ${escapeHTML(getRowAttended(row) || 'No')}
-            </span>
-          </td>
+          <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowFunction(row))}</td>
+          <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowLastLogon(row))}</td>
+          <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowGroup(row) || '-')}</td>
         `;
         modalTableBody.appendChild(trModal);
       });
 
-      // Show Modal
       document.getElementById('drilldown-modal').classList.add('active');
     });
 
@@ -1445,13 +1326,7 @@ function animateCountValue(elementId, start, end, duration = 800) {
     const progress = Math.min((timestamp - startTimestamp) / duration, 1);
     const current = Math.floor(progress * (end - start) + start);
     
-    // For TQM completions, check if we need a decimal place
-    if (obj.id === 'tqm-actual-val') {
-      const currentDec = (progress * (end - start) + start);
-      obj.innerHTML = currentDec.toFixed(1);
-    } else {
-      obj.innerHTML = current;
-    }
+    obj.innerHTML = current;
     
     if (progress < 1) {
       window.requestAnimationFrame(step);
@@ -1460,59 +1335,100 @@ function animateCountValue(elementId, start, end, duration = 800) {
   window.requestAnimationFrame(step);
 }
 
-// Render TQM and Category Progress widgets in the right column
+// Render target and license progress in the right column
 function renderRightColumnAnalytics(filteredRows) {
-  // 1. Business Excellence & TQM completions mandays (rows with attended === 'Yes')
-  const actualCompletions = filteredRows
-    .filter(row => getRowAttended(row) === 'Yes')
-    .reduce((acc, row) => acc + getRowMandays(row), 0);
+  // Get all unique licenses from the entire rawData so all categories are always visible
+  const allLicenses = Array.from(new Set(rawData.map(getRowLicense))).filter(Boolean).sort();
 
-  // We animate actual completions value from 0 to the target
-  const actualValEl = document.getElementById('tqm-actual-val');
-  if (actualValEl) {
-    const currentVal = parseFloat(actualValEl.innerText) || 0;
-    animateCountValue(actualValEl, currentVal, actualCompletions, 600);
-  }
-
-  // 2. Category Progress - Unique employee count per category
-  // Group by category, count unique GenID
-  const catEmployees = {};
+  // Calculate allocation counts per license type in filteredRows
+  const licenseCounts = {};
+  allLicenses.forEach(lic => {
+    licenseCounts[lic] = 0;
+  });
   filteredRows.forEach(row => {
-    const cat = getRowCategory(row);
-    if (!cat) return;
-    const genId = getRowEmployeeId(row) || `EMP-${getRowEmployeeName(row)}`;
-    if (!catEmployees[cat]) {
-      catEmployees[cat] = new Set();
+    const lic = getRowLicense(row);
+    if (lic && licenseCounts[lic] !== undefined) {
+      licenseCounts[lic]++;
     }
-    catEmployees[cat].add(genId);
   });
 
-  const categories = Object.keys(catEmployees).sort();
   const container = document.getElementById('category-progress-container');
   if (container) {
-    container.innerHTML = '';
-    if (categories.length === 0) {
+    if (allLicenses.length === 0) {
       container.innerHTML = `
         <div style="text-align: center; color: var(--text-muted); padding: 1rem 0; font-size: 0.85rem;">
-          No category data
+          No license data
         </div>
       `;
       return;
     }
 
-    categories.forEach((cat, index) => {
-      const count = catEmployees[cat].size;
-      const card = document.createElement('div');
-      card.className = 'category-progress-card';
-      card.innerHTML = `
-        <span class="cat-progress-name">${escapeHTML(cat)}</span>
-        <span class="cat-progress-val" id="cat-progress-val-${index}">0</span>
-      `;
-      container.appendChild(card);
+    // Remove placeholder message if it was displayed
+    if (container.querySelector('div') && container.querySelector('div').textContent.includes('No license data')) {
+      container.innerHTML = '';
+    }
 
-      // Animate category progress value using internal element query
-      const valEl = card.querySelector('.cat-progress-val');
-      animateCountValue(valEl, 0, count, 600 + index * 100);
+    allLicenses.forEach((lic) => {
+      const count = licenseCounts[lic];
+      const stored = localStorage.getItem(`sap_license_purchased_${lic}`);
+      const limit = stored ? parseInt(stored) : (DEFAULT_LICENSE_PURCHASED[lic] || 150);
+      const percentage = limit > 0 ? Math.min(100, Math.round((count / limit) * 100)) : 0;
+
+      let card = document.getElementById(`progress-card-${lic}`);
+      if (!card) {
+        card = document.createElement('div');
+        card.className = 'category-progress-card';
+        card.id = `progress-card-${lic}`;
+        card.innerHTML = `
+          <div class="cat-progress-header">
+            <div class="cat-progress-meta">
+              <span class="cat-progress-name" style="color: ${LICENSE_COLORS[lic] || LICENSE_COLORS['Other']};">${escapeHTML(lic)}</span>
+              <span class="cat-progress-details">
+                <span class="allocated-count" id="cat-allocated-${lic}" style="font-weight: 700; color: var(--text-primary);">${count}</span> / 
+                <span class="limit-count" id="cat-limit-val-${lic}">${limit}</span> Assigned (<span class="percentage-val" id="cat-pct-${lic}">${percentage}</span>%)
+              </span>
+            </div>
+            <div class="cat-progress-input-wrapper" data-html2canvas-ignore="true">
+              <label for="limit-input-${lic}">Limit:</label>
+              <input type="number" id="limit-input-${lic}" class="limit-input" data-license="${lic}" value="${limit}" min="0">
+            </div>
+          </div>
+          <div class="cat-progress-bar-track">
+            <div class="cat-progress-bar-fill" id="progress-fill-${lic}" style="width: ${percentage}%; background-color: ${LICENSE_COLORS[lic] || LICENSE_COLORS['Other']};"></div>
+          </div>
+        `;
+        container.appendChild(card);
+      } else {
+        // Update in-place to avoid visual resets and preserve keyboard focus
+        const allocatedEl = document.getElementById(`cat-allocated-${lic}`);
+        if (allocatedEl) allocatedEl.textContent = count;
+
+        const limitEl = document.getElementById(`cat-limit-val-${lic}`);
+        if (limitEl) limitEl.textContent = limit;
+
+        const pctEl = document.getElementById(`cat-pct-${lic}`);
+        if (pctEl) pctEl.textContent = percentage;
+
+        const inputEl = document.getElementById(`limit-input-${lic}`);
+        if (inputEl && document.activeElement !== inputEl) {
+          inputEl.value = limit;
+        }
+
+        const fillEl = document.getElementById(`progress-fill-${lic}`);
+        if (fillEl) {
+          fillEl.style.width = `${percentage}%`;
+        }
+      }
+    });
+
+    // Remove any legacy cards that are no longer valid
+    const existingCards = container.querySelectorAll('.category-progress-card');
+    existingCards.forEach(c => {
+      const id = c.id || '';
+      const lic = id.replace('progress-card-', '');
+      if (lic && !allLicenses.includes(lic)) {
+        c.remove();
+      }
     });
   }
 }

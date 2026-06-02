@@ -19,8 +19,8 @@ const mdContent = fs.readFileSync(manualMdPath, 'utf8');
 const doc = new PDFDocument({ 
   margin: 50,
   info: {
-    Title: 'SkillTrack Analyzer User Manual',
-    Author: 'SkillTrack Team',
+    Title: 'SAP User License Analyzer User Manual',
+    Author: 'SAPID Team',
   }
 });
 
@@ -28,7 +28,7 @@ const writeStream = fs.createWriteStream(pdfOutputPath);
 doc.pipe(writeStream);
 
 // Cover Page / Header
-doc.font('Helvetica-Bold').fontSize(26).fillColor('#0ea5e9').text('SkillTrack Analyzer', { align: 'center' });
+doc.font('Helvetica-Bold').fontSize(26).fillColor('#0ea5e9').text('SAP User License Analyzer', { align: 'center' });
 doc.font('Helvetica').fontSize(14).fillColor('#64748b').text('User Manual & Operations Guide', { align: 'center' });
 doc.moveDown(1.5);
 doc.strokeColor('#38bdf8').lineWidth(2).moveTo(50, doc.y).lineTo(560, doc.y).stroke();
@@ -60,7 +60,7 @@ lines.forEach(line => {
   if (line.startsWith('# ')) {
     // Title / Main header (skipping top one as we drew a custom header)
     const titleText = line.replace('# ', '');
-    if (titleText !== 'SkillTrack Analyzer User Manual') {
+    if (titleText !== 'SAP User License Analyzer User Manual') {
       doc.addPage();
       doc.font('Helvetica-Bold').fontSize(20).fillColor('#0b0f19').text(titleText);
       doc.moveDown(1);
