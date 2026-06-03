@@ -1,12 +1,12 @@
-# Technical Architecture Document - SAP User License Analyzer
+# Technical Architecture Document - SAPID license analyser
 
-This document provides a technical overview of the architectural design, security protections, data flow, and directories layout for the **SAP User License Analyzer** application.
+This document provides a technical overview of the architectural design, security protections, data flow, and directories layout for the **SAPID license analyser** application.
 
 ---
 
 ## 1. System Topology Overview
 
-SAP User License Analyzer is a cross-platform desktop application constructed on the **Tauri v2** framework. It leverages a multi-process architecture to separate concerns, providing a sandboxed user interface linked to a secure native Rust backend.
+SAPID license analyser is a cross-platform desktop application constructed on the **Tauri v2** framework. It leverages a multi-process architecture to separate concerns, providing a sandboxed user interface linked to a secure native Rust backend.
 
 ```mermaid
 graph TD
@@ -68,7 +68,7 @@ Data sync supports public standard Google Sheets, Enterprise Workspace restricte
 - **State Persistence**: The active synced URL and the spreadsheet row structures are cached inside browser `localStorage`.
 - **Logs Handler**: When error events (network timeouts, sheet parsing failures) occur in the frontend, they trigger the `append_log` Tauri command.
 - **Log Storage File**: Logs are saved inside the OS app data directory, resolved dynamically using Tauri's Manager path bindings:
-  - Windows: `%APPDATA%/Local/com.sapid.license.analyzer/logs/error.log`
+  - Windows: `%APPDATA%/Local/com.sapid.license.analyser/logs/error.log`
 - **Explorer Binding**: Clicking "Open Logs Folder" calls the custom Rust command `open_log_directory` which spawns the OS Explorer process pointing specifically to the logs directory, preserving platform compatibility.
 
 ---

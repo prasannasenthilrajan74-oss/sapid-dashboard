@@ -239,7 +239,7 @@ async fn fetch_sheet_data(url: String) -> Result<ApiResponse, String> {
 
     let response = client
         .get(&target_url)
-        .header("User-Agent", "SkillTrack-Analyzer/1.0")
+        .header("User-Agent", "SAPID-license-analyser/1.0")
         .send()
         .await
         .map_err(|e| format!("Failed to fetch sheet data: {}", e))?;

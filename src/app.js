@@ -136,15 +136,16 @@ const groupPageSize = 8;
 // Chart Instances
 let licenseChartInstance = null;
 let deptChartInstance = null;
+let plantIdChartInstance = null;
 let leadershipChartInstance = null;
 
 // Default purchased license totals (originally bought from the head office)
 const DEFAULT_LICENSE_PURCHASED = {
-  'AX': 150,
-  'AY': 150,
-  'FX': 150,
-  'HC': 150,
-  'HD': 150,
+  'AX': 78,
+  'AY': 6,
+  'FX': 37,
+  'HC': 83,
+  'HD': 41,
   'Other': 150
 };
 
@@ -376,9 +377,8 @@ async function fetchGoogleSheetsData(sheetUrl) {
       }
     }
 
-    // Fallback to preloaded data if rawData is empty
-    if (rawData.length === 0 && typeof window.PRELOADED_DATA !== 'undefined') {
-      rawData = window.PRELOADED_DATA;
+    if (rawData.length === 0) {
+      rawData = [];
       initDashboard();
     }
   } finally {
@@ -441,13 +441,8 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     }
     
-    if (typeof window.PRELOADED_DATA !== 'undefined') {
-      rawData = window.PRELOADED_DATA;
-      initDashboard();
-    } else {
-      rawData = [];
-      initDashboard();
-    }
+    rawData = [];
+    initDashboard();
   }
 });
 
@@ -469,13 +464,8 @@ function setupEventListeners() {
     fileInput.value = '';
     resetBtn.classList.add('hidden');
     
-    if (typeof window.PRELOADED_DATA !== 'undefined') {
-      rawData = window.PRELOADED_DATA;
-      initDashboard();
-    } else {
-      rawData = [];
-      initDashboard();
-    }
+    rawData = [];
+    initDashboard();
   });
 
   // Google Sheets Sync
@@ -730,7 +720,7 @@ function setupEventListeners() {
           dashboard_sheet_url: localStorage.getItem('dashboard_sheet_url') || '',
           cached_sheet_data: JSON.parse(localStorage.getItem('cached_sheet_data') || '[]'),
           exported_at: new Date().toISOString(),
-          app: "SAPID License Analyzer",
+          app: "SAPID license analyser",
           version: "1.0.0"
         };
         const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
@@ -921,6 +911,7 @@ function updateDashboard() {
   // 4. Render Main Charts
   renderLicenseChart(filteredRows);
   renderDeptChart(filteredRows);
+  renderPlantIdChart(filteredRows);
 
   // Render User Group Explorer
   renderLeadershipChart();
@@ -1093,6 +1084,129 @@ function renderDeptChart(rows) {
       }
     }
   });
+}
+
+// Render Third Graph: SAP ID Prefix Distribution (First 4 Characters/Numbers)
+// Render Third Graph: Plant ID Distribution (First 4 Characters/Numbers of SAP ID)
+function renderPlantIdChart(rows) {
+  if (typeof Chart === 'undefined') return;
+
+  const plantIdCounts = {};
+  rows.forEach(row => {
+    const sapId = getRowSAPID(row);
+    const prefix = sapId && sapId.length >= 4 ? sapId.substring(0, 4) : (sapId || 'Unknown');
+    plantIdCounts[prefix] = (plantIdCounts[prefix] || 0) + 1;
+  });
+
+  const labels = Object.keys(plantIdCounts).sort();
+  const dataValues = labels.map(label => plantIdCounts[label]);
+  
+  // Vibrant gradients/colors for prefixes
+  const palette = ['#0ea5e9', '#6366f1', '#a855f7', '#ec4899', '#14b8a6', '#f59e0b', '#10b981'];
+  const colors = labels.map((_, i) => palette[i % palette.length]);
+
+  if (plantIdChartInstance) {
+    plantIdChartInstance.destroy();
+  }
+
+  const canvas = document.getElementById('chart-plantid-distribution');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  plantIdChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Users count',
+        data: dataValues,
+        backgroundColor: colors,
+        borderRadius: 6,
+        borderWidth: 0,
+        maxBarThickness: 45
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (context) => ` Users: ${context.raw}`
+          }
+        }
+      },
+      onClick: (e, elements) => {
+        if (elements && elements.length > 0) {
+          const index = elements[0].index;
+          const clickedPrefix = labels[index];
+          showPlantIdDetailsModal(clickedPrefix);
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false, drawBorder: false },
+          ticks: { font: { weight: '600' } }
+        },
+        y: {
+          grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
+          beginAtZero: true,
+          ticks: {
+            precision: 0
+          }
+        }
+      }
+    }
+  });
+}
+
+function showPlantIdDetailsModal(prefix) {
+  // Find matching users from the filtered/current state of rawData
+  const matchingRows = rawData.filter(row => {
+    const matchLicense = currentFilters.license === 'ALL' || getRowLicense(row) === currentFilters.license;
+    const matchDept = currentFilters.dept === 'ALL' || getRowDepartment(row) === currentFilters.dept;
+    if (!matchLicense || !matchDept) return false;
+
+    const sapId = getRowSAPID(row);
+    const rowPrefix = sapId && sapId.length >= 4 ? sapId.substring(0, 4) : (sapId || 'Unknown');
+    return rowPrefix === prefix;
+  });
+
+  const modalTitle = document.getElementById('modal-title');
+  const modalSubtitle = document.getElementById('modal-subtitle');
+  const modalTableBody = document.getElementById('modal-table-body');
+
+  modalTitle.innerText = `Plant ID Group: ${prefix}`;
+  modalSubtitle.innerText = `Users matching Plant ID (sorted by Department)`;
+
+  modalTableBody.innerHTML = '';
+  
+  // Sort by department, then name
+  matchingRows.sort((a, b) => {
+    const deptA = getRowDepartment(a);
+    const deptB = getRowDepartment(b);
+    if (deptA !== deptB) return deptA.localeCompare(deptB);
+    const nameA = getRowUserName(a);
+    const nameB = getRowUserName(b);
+    return nameA.localeCompare(nameB);
+  });
+
+  matchingRows.forEach(row => {
+    const trModal = document.createElement('tr');
+    trModal.innerHTML = `
+      <td style="padding: 0.8rem 1rem; font-weight: 600;">${escapeHTML(getRowSAPID(row))}</td>
+      <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowUserName(row))}</td>
+      <td style="padding: 0.8rem 1rem;"><span class="badge-license">${escapeHTML(getRowLicense(row))}</span></td>
+      <td style="padding: 0.8rem 1rem;"><span class="badge-dept">${escapeHTML(getRowDepartment(row))}</span></td>
+      <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowFunction(row))}</td>
+      <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowLastLogon(row))}</td>
+      <td style="padding: 0.8rem 1rem;">${escapeHTML(getRowGroup(row) || '-')}</td>
+    `;
+    modalTableBody.appendChild(trModal);
+  });
+
+  document.getElementById('drilldown-modal').classList.add('active');
 }
 
 function closeModal() {
@@ -1393,6 +1507,10 @@ function renderRightColumnAnalytics(filteredRows) {
               <input type="number" id="limit-input-${lic}" class="limit-input" data-license="${lic}" value="${limit}" min="0">
             </div>
           </div>
+          <div class="cat-progress-remaining-line" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem; display: flex; justify-content: space-between;">
+            <span>Remaining Count:</span>
+            <span id="cat-remaining-${lic}" style="font-weight: 600; color: ${limit - count > 0 ? '#10b981' : '#f43f5e'};">${limit - count}</span>
+          </div>
           <div class="cat-progress-bar-track">
             <div class="cat-progress-bar-fill" id="progress-fill-${lic}" style="width: ${percentage}%; background-color: ${LICENSE_COLORS[lic] || LICENSE_COLORS['Other']};"></div>
           </div>
@@ -1412,6 +1530,12 @@ function renderRightColumnAnalytics(filteredRows) {
         const inputEl = document.getElementById(`limit-input-${lic}`);
         if (inputEl && document.activeElement !== inputEl) {
           inputEl.value = limit;
+        }
+
+        const remainingEl = document.getElementById(`cat-remaining-${lic}`);
+        if (remainingEl) {
+          remainingEl.textContent = limit - count;
+          remainingEl.style.color = limit - count > 0 ? '#10b981' : '#f43f5e';
         }
 
         const fillEl = document.getElementById(`progress-fill-${lic}`);

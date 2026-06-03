@@ -1,0 +1,1 @@
+[2026-06-03 12:11:20] [FATAL] App crash on startup: '_tkinter.tkapp' object has no attribute 'quota_widgets'

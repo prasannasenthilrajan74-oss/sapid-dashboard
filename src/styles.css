@@ -397,7 +397,7 @@ body {
 
 @media (min-width: 1024px) {
   .vis-grid-first {
-    grid-template-columns: 3fr 2fr;
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 

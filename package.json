@@ -1,11 +1,8 @@
 {
-  "name": "sheets-dashboard",
+  "name": "sapid-license-analyser",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "SAPID license analyser desktop app",
   "scripts": {
-    "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tauri dev",
     "build": "tauri build",
     "tauri": "tauri"

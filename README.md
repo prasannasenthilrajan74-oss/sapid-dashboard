@@ -1,4 +1,4 @@
-# SAP User License Analyzer
+# SAPID license analyser
 
 An interactive, premium, dark-mode cross-platform desktop application designed to visualize, filter, and analyze SAP user licensing distributions and logon recency activity. The dashboard is built with **modern glassmorphic aesthetics** and updates dynamically by fetching real-time data directly from a **Google Sheet** (or Google Apps Script Web App) at runtime, with offline support for local Excel uploads.
 
@@ -83,7 +83,7 @@ If your organization restricts external sharing, you can fetch data securely by 
 3. Click **Deploy** -> **New Deployment**.
 4. Set "Select type" to **Web app**.
 5. Configure the deployment settings:
-   - **Description**: SAP License Dashboard Fetcher
+   - **Description**: SAPID license analyser Fetcher
    - **Execute as**: Me (your email)
    - **Who has access**: Anyone (this lets the client-side JavaScript request data without a login prompt)
 6. Click **Deploy**.

@@ -322,20 +322,15 @@ async function fetchSpreadsheetData(sheetUrl) {
       }
     }
 
-    if (typeof window.PRELOADED_DATA !== 'undefined') {
-      rawData = window.PRELOADED_DATA;
-      initLedger();
-    } else {
-      const tbody = document.getElementById('employee-table-body');
-      if (tbody) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="6" style="text-align: center; color: var(--accent-rose); padding: 3rem 0; font-weight: 500;">
-              ❌ Failed to fetch spreadsheet data: ${err.message}
-            </td>
-          </tr>
-        `;
-      }
+    const tbody = document.getElementById('employee-table-body');
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align: center; color: var(--accent-rose); padding: 3rem 0; font-weight: 500;">
+            ❌ Failed to fetch spreadsheet data: ${err.message}
+          </td>
+        </tr>
+      `;
     }
   }
 }
@@ -821,7 +816,7 @@ function setupLedgerListeners() {
           dashboard_sheet_url: localStorage.getItem('dashboard_sheet_url') || '',
           cached_sheet_data: JSON.parse(localStorage.getItem('cached_sheet_data') || '[]'),
           exported_at: new Date().toISOString(),
-          app: "SAPID License Analyzer",
+          app: "SAPID license analyser",
           version: "1.0.0"
         };
         const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
@@ -916,12 +911,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    if (typeof window.PRELOADED_DATA !== 'undefined') {
-      rawData = window.PRELOADED_DATA;
-      initLedger();
-    } else {
-      rawData = [];
-      initLedger();
-    }
+    rawData = [];
+    initLedger();
   }
 });

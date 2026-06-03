@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "SAPID License Analyzer",
+  "productName": "SAPID license analyser",
   "version": "1.0.0",
-  "identifier": "com.sapid.license.analyzer",
+  "identifier": "com.sapid.license.analyser",
   "build": {
     "beforeDevCommand": "",
     "beforeBuildCommand": "",
@@ -12,7 +12,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "SAPID License Analyzer",
+        "title": "SAPID license analyser",
         "width": 1400,
         "height": 900,
         "minWidth": 1000,

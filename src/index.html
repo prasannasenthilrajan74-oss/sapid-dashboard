@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SAP User License Analyzer</title>
-  <meta name="description" content="SAP User License Analyzer — Interactive SAP User Licensing & Logon Activity Dashboard">
+  <title>SAPID license analyser</title>
+  <meta name="description" content="SAPID license analyser - Interactive SAP User Licensing & Logon Activity Dashboard">
   <link rel="stylesheet" href="styles.css?v=3">
   <!-- Chart.js for beautiful charts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -25,7 +25,7 @@
     <!-- Header Section -->
     <header class="dashboard-header">
       <div class="header-title-section">
-        <h1>SAP User License Analyzer</h1>
+        <h1>SAPID license analyser</h1>
         <p>Interactive SAP User Licensing &amp; Logon Activity Dashboard</p>
       </div>
 
@@ -36,7 +36,7 @@
           <button id="sheet-sync-btn" class="sheet-sync-btn">Sync</button>
         </div>
         <button id="reset-btn" class="reset-btn hidden">
-          <span>🔄</span> Reset to Default Data
+          <span>🗑️</span> Clear Cached Data
         </button>
         <div class="file-dropzone">
           <span>📂</span> Upload Excel Sheet
@@ -137,6 +137,19 @@
           <canvas id="chart-dept-distribution"></canvas>
         </div>
       </div>
+
+      <!-- SAP ID Group Distribution -->
+      <div class="glass-card">
+        <div class="card-header">
+          <div>
+            <h2>Plant ID Distribution</h2>
+            <div class="card-subtitle">Users grouped by Plant ID (Click bars to inspect)</div>
+          </div>
+        </div>
+        <div class="chart-container-large">
+          <canvas id="chart-plantid-distribution"></canvas>
+        </div>
+      </div>
     </section>
 
 
@@ -167,10 +180,14 @@
               <!-- Dynamically populated course buttons -->
             </div>
             <!-- Group Pagination Controls -->
-            <div id="group-pagination-controls" class="pagination" style="margin-top: 1rem; justify-content: center; gap: 1rem; display: flex;" data-html2canvas-ignore="true">
-              <button id="btn-prev-groups" class="pagination-btn" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" disabled>Previous</button>
+            <div id="group-pagination-controls" class="pagination"
+              style="margin-top: 1rem; justify-content: center; gap: 1rem; display: flex;"
+              data-html2canvas-ignore="true">
+              <button id="btn-prev-groups" class="pagination-btn" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;"
+                disabled>Previous</button>
               <span id="group-page-info" style="font-size: 0.8rem;">Page 1 of 1</span>
-              <button id="btn-next-groups" class="pagination-btn" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" disabled>Next</button>
+              <button id="btn-next-groups" class="pagination-btn" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;"
+                disabled>Next</button>
             </div>
           </div>
 
@@ -180,7 +197,8 @@
             <div style="margin-bottom: 0.75rem;">
               <h3 id="selected-group-title"
                 style="font-family: var(--font-heading); font-size: 1rem; font-weight: 600;">Assigned Users</h3>
-              <div id="selected-group-subtitle" class="card-subtitle" style="font-size: 0.75rem;">Select a group to view details</div>
+              <div id="selected-group-subtitle" class="card-subtitle" style="font-size: 0.75rem;">Select a group to view
+                details</div>
             </div>
             <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
               <table>
@@ -226,7 +244,7 @@
     <!-- Footer Component -->
     <footer class="dashboard-footer" data-html2canvas-ignore="true">
       <div class="footer-left">
-        <span class="app-version">SAPID License Analyzer v1.0.0</span>
+        <span class="app-version">SAPID license analyser v1.0.0</span>
         <span class="divider">|</span>
         <a href="#" id="link-user-manual" class="footer-link">📖 User Manual (PDF)</a>
         <span class="divider">|</span>
@@ -283,13 +301,13 @@
       <div class="modal-header">
         <div class="modal-title-area">
           <h3>Privacy Policy</h3>
-          <p>SAPID License Analyzer Data Protection</p>
+          <p>SAPID license analyser Data Protection</p>
         </div>
         <button class="modal-close-btn" id="btn-close-privacy">&times;</button>
       </div>
       <div class="modal-content-area text-content">
         <h4>1. Local-First Architecture</h4>
-        <p>SAPID License Analyzer is designed to be a local-first application. All processes run locally on your system.
+        <p>SAPID license analyser is designed to be a local-first application. All processes run locally on your system.
           None of your data, sheet configurations, or uploaded spreadsheets are sent to external trackers or analytics
           servers.</p>
 
@@ -316,12 +334,12 @@
       <div class="modal-header">
         <div class="modal-title-area">
           <h3>Third-Party Licenses</h3>
-          <p>Open-source software used in SAPID License Analyzer</p>
+          <p>Open-source software used in SAPID license analyser</p>
         </div>
         <button class="modal-close-btn" id="btn-close-licenses">&times;</button>
       </div>
       <div class="modal-content-area text-content">
-        <p>SAPID License Analyzer is built using the following open-source libraries:</p>
+        <p>SAPID license analyser is built using the following open-source libraries:</p>
         <ul>
           <li><strong>Tauri Framework</strong> (MIT License) - Cross-platform GUI framework.</li>
           <li><strong>Chart.js</strong> (MIT License) - Beautiful dashboard charting.</li>
@@ -360,8 +378,7 @@
     </div>
   </div>
 
-  <!-- Load preloaded SAP user data first -->
-  <script src="preloaded_data.js"></script>
+
   <!-- Load application logic -->
   <script src="app.js?v=4"></script>
 </body>

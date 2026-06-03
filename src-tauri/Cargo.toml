@@ -1,16 +1,16 @@
 [package]
-name = "sapid-license-analyzer"
+name = "sapid-license-analyser"
 version = "1.0.0"
-description = "SAPID License Analyzer - Cross-Platform SAP User License Dashboard"
+description = "SAPID license analyser - cross-platform SAP user license dashboard"
 authors = []
 edition = "2021"
 
 [lib]
-name = "sapid_license_analyzer_lib"
+name = "sapid_license_analyser_lib"
 crate-type = ["rlib"]
 
 [[bin]]
-name = "sapid-license-analyzer"
+name = "sapid-license-analyser"
 path = "src/main.rs"
 
 [build-dependencies]

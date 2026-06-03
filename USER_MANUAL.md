@@ -1,6 +1,6 @@
-# SAP User License Analyzer User Manual
+# SAPID license analyser User Manual
 
-Welcome to **SAPID License Analyzer**, an interactive, dark-mode desktop dashboard designed to visualize, filter, and analyze SAP user licensing distributions and purchased progress.
+Welcome to **SAPID license analyser**, an interactive, dark-mode desktop dashboard designed to visualize, filter, and analyze SAP user licensing distributions and purchased progress.
 
 ---
 

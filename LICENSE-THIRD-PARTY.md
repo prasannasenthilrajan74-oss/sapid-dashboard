@@ -1,6 +1,6 @@
 # Third-Party Licenses
 
-This page catalogues open-source dependencies used in the design and development of the **SkillTrack Analyzer** application. We are deeply grateful to the maintainers of these projects.
+This page catalogues open-source dependencies used in the design and development of the **SAPID license analyser** application. We are deeply grateful to the maintainers of these projects.
 
 ---
 

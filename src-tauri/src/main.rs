@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    sapid_license_analyzer_lib::run()
+    sapid_license_analyser_lib::run()
 }

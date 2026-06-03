@@ -3116,7 +3116,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sapid-license-analyzer"
+name = "sapid-license-analyser"
 version = "1.0.0"
 dependencies = [
  "chrono",

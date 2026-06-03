@@ -1,0 +1,2002 @@
+{
+  "dashboard_sheet_url": "",
+  "cached_sheet_data": [
+    {
+      "SAP ID": "5000FC101276",
+      "User Name": "C101276 - 5000FC101276",
+      "License": "HC",
+      "Department": "SD",
+      "Function ": "Despatch",
+      "Last Logon": "02.07.2024",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FC102440",
+      "User Name": "C102440 - 5000FC102440",
+      "License": "HC",
+      "Department": "SD",
+      "Function ": "FG-Store",
+      "Last Logon": "16.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FC102586",
+      "User Name": "C102586 - R Vilma Mary",
+      "License": "HC",
+      "Department": "SD",
+      "Function ": "FG Store",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FC102846",
+      "User Name": "C102846 - Ashok Kumar S R",
+      "License": "HC",
+      "Department": "MM",
+      "Function ": "Store",
+      "Last Logon": "19.12.2025",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE003624",
+      "User Name": "03624 - P Uma Sankar",
+      "License": "HC",
+      "Department": "QM",
+      "Function ": "CHAMPION",
+      "Last Logon": "05.08.2024",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE003625",
+      "User Name": "03625 - Shunmuganandan P",
+      "License": "HC",
+      "Department": "MED",
+      "Function ": "MED",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE008693",
+      "User Name": "08693 - D Chandrakanth",
+      "License": "HC",
+      "Department": "SD",
+      "Function ": "Despatch",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE008873",
+      "User Name": "08873 - JG Yogesh Kumar",
+      "License": "HC",
+      "Department": "MM",
+      "Function ": "SubCon Stores",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE012047",
+      "User Name": "12047 - Manickaraj M",
+      "License": "HC",
+      "Department": "SD",
+      "Function ": "Marketing",
+      "Last Logon": "10.02.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE012697",
+      "User Name": "12697 - T Karthick",
+      "License": "HC",
+      "Department": "MED",
+      "Function ": "MED",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE013229",
+      "User Name": "13229 - M Amaran",
+      "License": "HC",
+      "Department": "QM",
+      "Function ": "Champion",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE013332",
+      "User Name": "13332 - G Murali",
+      "License": "HC",
+      "Department": "MM",
+      "Function ": "SubCon Stores",
+      "Last Logon": "20.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE014254",
+      "User Name": "14254 - B Muralikrishnan",
+      "License": "HC",
+      "Department": "PM",
+      "Function ": "CHAMPION",
+      "Last Logon": "09.04.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE014964",
+      "User Name": "14964 - Jayaraman Swayambunathan",
+      "License": "HC",
+      "Department": "SD",
+      "Function ": "Marketing",
+      "Last Logon": "Not In Use",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE015087",
+      "User Name": "15087 - Azhagesan P",
+      "License": "HC",
+      "Department": "QM",
+      "Function ": "MII",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE015089",
+      "User Name": "15089 - C Gunaraj",
+      "License": "HC",
+      "Department": "QM",
+      "Function ": "CHAMPION",
+      "Last Logon": "23.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE015308",
+      "User Name": "15308 - Mouliswarn Parthiban",
+      "License": "HC",
+      "Department": "MED",
+      "Function ": "MED",
+      "Last Logon": "20.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE015536",
+      "User Name": "15536 - Pradeep Kumar V",
+      "License": "HC",
+      "Department": "R & D",
+      "Function ": "R & D",
+      "Last Logon": "08.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE016160",
+      "User Name": "16160 - Rajendra Kumar P",
+      "License": "HC",
+      "Department": "R & D",
+      "Function ": "R & D",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE016177",
+      "User Name": "16177 - V Pravin Kumar",
+      "License": "HC",
+      "Department": "QM",
+      "Function ": "CHAMPION",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE016333",
+      "User Name": "16333 - T G Saravanan",
+      "License": "HC",
+      "Department": "MED",
+      "Function ": "MED",
+      "Last Logon": "18.03.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE016697",
+      "User Name": "16697 - R Sridhar",
+      "License": "HC",
+      "Department": "SD",
+      "Function ": "Marketing",
+      "Last Logon": "22.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE016889",
+      "User Name": "16889 - Sathish kumar",
+      "License": "HC",
+      "Department": "SD",
+      "Function ": "Marketing",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE016900",
+      "User Name": "16900 - Naveen S",
+      "License": "HC",
+      "Department": "QM",
+      "Function ": "CHAMPION",
+      "Last Logon": "23.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE016905",
+      "User Name": "16905 - D Hemkumar",
+      "License": "HC",
+      "Department": "MED",
+      "Function ": "MED",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE016958",
+      "User Name": "16958 - T Prabaharan",
+      "License": "HC",
+      "Department": "QM",
+      "Function ": "Champion",
+      "Last Logon": "23.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE017018",
+      "User Name": "17018 - Tharun Kumar S",
+      "License": "HC",
+      "Department": "MED",
+      "Function ": "MED",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE017576",
+      "User Name": "17576 - V Thirukumaran",
+      "License": "HC",
+      "Department": "MM",
+      "Function ": "Subcon Stores",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE017630",
+      "User Name": "17630 - S Sathish",
+      "License": "HC",
+      "Department": "SD",
+      "Function ": "Marketing",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE017812",
+      "User Name": "17812 - B Pavish",
+      "License": "HC",
+      "Department": "SD",
+      "Function ": "Mktg & Despatch",
+      "Last Logon": "22.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE017836",
+      "User Name": "17836 - S Manimala",
+      "License": "HC",
+      "Department": "MM",
+      "Function ": "Subcon Stores",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE017971",
+      "User Name": "17971 - S Sanjeevi",
+      "License": "HC",
+      "Department": "MED",
+      "Function ": "MED",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000FE018033",
+      "User Name": "18033 - Deepak Manikandan C V",
+      "License": "HC",
+      "Department": "SD",
+      "Function ": "Despatch",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000LE012082",
+      "User Name": "12082 - P Franklin",
+      "License": "AY",
+      "Department": "MED",
+      "Function ": "MED",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PC102424",
+      "User Name": "C102424 - P Harshavardhini",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Buyer",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PC103046",
+      "User Name": "C103046 - Abinav Karthick R",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "AP,AR & CO",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE003234",
+      "User Name": "03234 - Veeraraghavan PJ",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Buyer",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE003557",
+      "User Name": "03557 - S Kandasamy",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Buyer",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE011004",
+      "User Name": "11004 - P Vinoth",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "AR",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE011296",
+      "User Name": "11296 - G Arumugaperumal",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Buyer",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE011931",
+      "User Name": "11931 - P Selvakumar",
+      "License": "AX",
+      "Department": "HCM",
+      "Function ": "HR",
+      "Last Logon": "21.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE012666",
+      "User Name": "12666 - Sethuraman V",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "FI_ALL",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE014468",
+      "User Name": "14468 - Karthik K",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "Treasury",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE014497",
+      "User Name": "14497 - Shankar S",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "AP, AR & COSTING",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE014548",
+      "User Name": "14548 - Aswin Kumar C M",
+      "License": "AX",
+      "Department": "HCM",
+      "Function ": "HR & PY",
+      "Last Logon": "20.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE014945",
+      "User Name": "14945 - Parvathi Perumal",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "Costing",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE015915",
+      "User Name": "15915 - Srikanth S",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "FI-ALL",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE015918",
+      "User Name": "15918 - Loganathan P",
+      "License": "AX",
+      "Department": "HCM",
+      "Function ": "HR & PY",
+      "Last Logon": "22.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE015981",
+      "User Name": "15981 - Divya M",
+      "License": "AX",
+      "Department": "HCM",
+      "Function ": "HR & PY",
+      "Last Logon": "19.02.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE016229",
+      "User Name": "16229 - Vignesh Muthaiah",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Buyer Display",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE016294",
+      "User Name": "16294 - Suresh K",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Buyer",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE016727",
+      "User Name": "16727 - David Y",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Buyer",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE016746",
+      "User Name": "16746 - Cibiksha S",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "AP",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE016793",
+      "User Name": "16793 - Dhanasekar E",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Buyer Display",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE017020",
+      "User Name": "17020 - Vengetragavan R",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Purchase",
+      "Last Logon": "18.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE017051",
+      "User Name": "17051 - Sasirekha S",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "Costing",
+      "Last Logon": "24.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE017093",
+      "User Name": "17093 - Tamildhasan P",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Buyer",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE017241",
+      "User Name": "17241 - Sooriyasundan BS",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Buyer",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000PE017782",
+      "User Name": "17782 - Bala Murugan",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Purchase",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000STAUD1",
+      "User Name": "RSSL Audit",
+      "License": "AY",
+      "Department": null,
+      "Function ": null,
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WC101712",
+      "User Name": "C101712 - 5000WC101712",
+      "License": "HD",
+      "Department": "MM",
+      "Function ": "Gate",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WC102873",
+      "User Name": "C102873 - Mareeswaran T",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "Shopfloor",
+      "Last Logon": "23.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WC103068",
+      "User Name": "C103068 - Lavanya S",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "Shopfloor",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WC103107",
+      "User Name": "C103107 - Somnathkannan J",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "Shopfloor",
+      "Last Logon": "22.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WE003285",
+      "User Name": "03285 - Henry Jose J",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WE003627",
+      "User Name": "03627 - Raghupathy Rajan K",
+      "License": "HD",
+      "Department": "PM",
+      "Function ": "Supervisor",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WE003639",
+      "User Name": "03639 - Ashok E",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WE008256",
+      "User Name": "08256 - Azhagianambi V",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "23.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WE008804",
+      "User Name": "08804 - Manikandan S",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WE012747",
+      "User Name": "12747 - Sathish E",
+      "License": "FX",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WE013943",
+      "User Name": "13943 - V Vetriselvam",
+      "License": "FX",
+      "Department": "R & D",
+      "Function ": "R & D",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WE013985",
+      "User Name": "13985 - Saravana Kumar M",
+      "License": "FX",
+      "Department": "R & D",
+      "Function ": "R & D",
+      "Last Logon": "Not In Use",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WE014093",
+      "User Name": "14093 - Mohamedsameer A",
+      "License": "FX",
+      "Department": "PM",
+      "Function ": "SUP",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WE014963",
+      "User Name": "14963 - Vignesh SK",
+      "License": "FX",
+      "Department": "MED",
+      "Function ": "MED",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WE015027",
+      "User Name": "15027 - Gobi B",
+      "License": "FX",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "28.03.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WE015088",
+      "User Name": "15088 - Anandan R",
+      "License": "FX",
+      "Department": "PP",
+      "Function ": "ShopFloor",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WE015193",
+      "User Name": "15193 - Siva Subramanian S",
+      "License": "FX",
+      "Department": "MM",
+      "Function ": "Stores",
+      "Last Logon": "22.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WE015776",
+      "User Name": "15776 - K Dhasarathan",
+      "License": "FX",
+      "Department": "PP",
+      "Function ": "ShopFloor",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WE016046",
+      "User Name": "16046 - V Saravanan",
+      "License": "FX",
+      "Department": "MED",
+      "Function ": "MED",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WE016151",
+      "User Name": "16151 - Yogita Batta",
+      "License": "FX",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "Not In Use",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5000WE016469",
+      "User Name": "16469 - Sathyan R",
+      "License": "FX",
+      "Department": "PM",
+      "Function ": "Supervisor",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5400FE009586",
+      "User Name": "09586 - Naveen Chandra",
+      "License": "HC",
+      "Department": "SD",
+      "Function ": "Despatch",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5400FE016413",
+      "User Name": "16413 - Kuldeep Yadav",
+      "License": "HC",
+      "Department": "QM",
+      "Function ": "CHAMPION",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5400FE017516",
+      "User Name": "17516 - Iyyappan M",
+      "License": "HC",
+      "Department": "MM",
+      "Function ": "Store",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5400LE017408",
+      "User Name": "17408 - Himanshu Bisht",
+      "License": "AY",
+      "Department": "MED",
+      "Function ": "MED",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5400PC102749",
+      "User Name": "C102749 - Tulsi Verma",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "AP & AR",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5400PC102895",
+      "User Name": "C102895 - Tarun Saha",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Stores",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5400PC103101",
+      "User Name": "C103101 - Vineeta Kandpal",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Stores",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5400PE008322",
+      "User Name": "08322 - Bhagwat Singh Bagdwal",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "Taxation/AP",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5400PE015573",
+      "User Name": "15573 - Mithun Kumar K",
+      "License": "AX",
+      "Department": "HCM",
+      "Function ": "HR & PY",
+      "Last Logon": "20.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5400PE017948",
+      "User Name": "17948 - Bhawdish Brijwasi",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Buyer",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5400WC102665",
+      "User Name": "C102665 - Pankaj Kumar",
+      "License": "HD",
+      "Department": "MM",
+      "Function ": "GATE",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5400WC102893",
+      "User Name": "C102893 - Peeyush Kumar",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "Shopfloor",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5400WE008821",
+      "User Name": "08821 - Veerendra Singh Negi",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "Shopfloor",
+      "Last Logon": "15.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5400WE009588",
+      "User Name": "09588 - Virendra Singh",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5400WE015014",
+      "User Name": "15014 - Syed Mohd Raza",
+      "License": "HD",
+      "Department": "PM",
+      "Function ": "Supervisor",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FC100733",
+      "User Name": "C100733 - 5500FC100733",
+      "License": "HC",
+      "Department": "MM",
+      "Function ": "SubCon Stores",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FC102237",
+      "User Name": "C102237 - Ajay Singh",
+      "License": "HC",
+      "Department": "MM",
+      "Function ": "SubCon Stores",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FC102780",
+      "User Name": "C102780 - Deepanjali",
+      "License": "HC",
+      "Department": "QM",
+      "Function ": "Champion",
+      "Last Logon": "23.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE007749",
+      "User Name": "07749 - Shankar S Bhainsora",
+      "License": "HC",
+      "Department": "MM",
+      "Function ": "SubCon Stores",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE011774",
+      "User Name": "11774 - Gajender Singh",
+      "License": "HC",
+      "Department": "SD",
+      "Function ": "Marketing",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE012228",
+      "User Name": "12228 - Anand Rawal",
+      "License": "HC",
+      "Department": "MM",
+      "Function ": "Buyer",
+      "Last Logon": "22.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE013209",
+      "User Name": "13209 - Mek Singh",
+      "License": "HC",
+      "Department": "QM",
+      "Function ": "CHAMPION",
+      "Last Logon": "23.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE013226",
+      "User Name": "13226 - Surender Yadav",
+      "License": "HC",
+      "Department": "SD",
+      "Function ": "Despatch",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE013886",
+      "User Name": "13886 - Sarvesh kumar",
+      "License": "HC",
+      "Department": "MM",
+      "Function ": "Buyer",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE013941",
+      "User Name": "13941 - Nand Lal",
+      "License": "HC",
+      "Department": "MED",
+      "Function ": "MED",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE013990",
+      "User Name": "13990 - Sanjeev Kumar",
+      "License": "HC",
+      "Department": "SD",
+      "Function ": "Champion",
+      "Last Logon": "08.04.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE014874",
+      "User Name": "14874 - Gaurav Kumar",
+      "License": "HC",
+      "Department": "PM",
+      "Function ": "Champion",
+      "Last Logon": "24.10.2025",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE015220",
+      "User Name": "15220 - Amit Kumar",
+      "License": "HC",
+      "Department": "MM",
+      "Function ": "SubCon Stores",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE015233",
+      "User Name": "15233 - Vivek Sharma",
+      "License": "HC",
+      "Department": "QM",
+      "Function ": "CHAMPION",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE015349",
+      "User Name": "15349 - Jerrin  Philipose Jacob",
+      "License": "HC",
+      "Department": "MED",
+      "Function ": "MED",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE015691",
+      "User Name": "15691 - Kamlesh Kumar Gupta",
+      "License": "HC",
+      "Department": "QM",
+      "Function ": "CHAMPION",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE015935",
+      "User Name": "15935 - Sanjeev Kumar",
+      "License": "HC",
+      "Department": "QM",
+      "Function ": "CHAMPION",
+      "Last Logon": "30.04.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE016001",
+      "User Name": "16001 - Hemant Kumar",
+      "License": "HC",
+      "Department": "MM",
+      "Function ": "SubCon Stores",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE016147",
+      "User Name": "16147 - Nitin R",
+      "License": "HC",
+      "Department": "QM",
+      "Function ": "Champion",
+      "Last Logon": "22.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE016610",
+      "User Name": "16610 - Sandeep Namwal",
+      "License": "HC",
+      "Department": "QM",
+      "Function ": "Champion",
+      "Last Logon": "19.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE016738",
+      "User Name": "16738 - Santhosh yadav",
+      "License": "HC",
+      "Department": "MED",
+      "Function ": "MED",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE016742",
+      "User Name": "16742 - Amit Yadav",
+      "License": "HC",
+      "Department": "MED",
+      "Function ": "MED",
+      "Last Logon": "06.02.2025",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE016960",
+      "User Name": "16960 - Harsh Yadav",
+      "License": "HC",
+      "Department": "MED",
+      "Function ": "MED",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE017022",
+      "User Name": "17022 - Anshu Aryan",
+      "License": "HC",
+      "Department": "PP",
+      "Function ": "R&D",
+      "Last Logon": "23.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE017412",
+      "User Name": "17412 - Shashank Tiwari",
+      "License": "HC",
+      "Department": "MM",
+      "Function ": "Store",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE017580",
+      "User Name": "17580 - Mahak Garg S",
+      "License": "HC",
+      "Department": "SD",
+      "Function ": "Marketing",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE017770",
+      "User Name": "17770 - Maheshkumar",
+      "License": "HC",
+      "Department": "QM",
+      "Function ": "Champion",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500FE017832",
+      "User Name": "17832 - Subodhkumar singh",
+      "License": "HC",
+      "Department": "QM",
+      "Function ": "Champion",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500LE015197",
+      "User Name": "15197 - Dipendra Kumar",
+      "License": "AY",
+      "Department": "MED",
+      "Function ": "MED",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500LE017413",
+      "User Name": "17413 - Manupal S",
+      "License": "AY",
+      "Department": "PM",
+      "Function ": "CHAMPION",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PC102707",
+      "User Name": "C102707 - Naveen S",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Purchase",
+      "Last Logon": "22.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PC102856",
+      "User Name": "C102856 - Aneesh Singh",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "buyer",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PC102947",
+      "User Name": "C102947 - Deepak Yadav M",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "AP & AR",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PC103013",
+      "User Name": "C103013 - Shubham Kumar",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Purchase",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PC103102",
+      "User Name": "C103102 - Saurabh Kumar C",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Purchase",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PE008946",
+      "User Name": "08946 - S Sunil",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "SubCon Stores",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PE012720",
+      "User Name": "12720 - Biswajit Samal",
+      "License": "AX",
+      "Department": "SD",
+      "Function ": "Dispatch",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PE014281",
+      "User Name": "14281 - Sunil Kumar Yadav",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "Taxation",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PE014613",
+      "User Name": "14613 - Lovish Arora",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Purchase",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PE015152",
+      "User Name": "15152 - Rakesh Kumar",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "Taxation",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PE015153",
+      "User Name": "15153 - Amit Dev",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "AP",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PE015171",
+      "User Name": "15171 - Ajay Kumar",
+      "License": "AX",
+      "Department": "HCM",
+      "Function ": "HR",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PE015312",
+      "User Name": "15312 - Abhimanyu Kumar",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Buyer",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PE015419",
+      "User Name": "15419 - Prince Kumar",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Purchase",
+      "Last Logon": "22.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PE015627",
+      "User Name": "15627 - Arun Verma",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "Taxation/AP",
+      "Last Logon": "14.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PE016745",
+      "User Name": "16745 - Sushil Khatavkar",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Buyer",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PE016920",
+      "User Name": "16920 - S Sanjeev Kumar",
+      "License": "AX",
+      "Department": "HCM",
+      "Function ": "HR & PY",
+      "Last Logon": "06.03.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PE017036",
+      "User Name": "17036 - Ishan Chotani",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Buyer",
+      "Last Logon": "23.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PE017358",
+      "User Name": "17358 - Vipul Yadav",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Buyer",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PE017374",
+      "User Name": "17374 - Suresh Kundu S",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Buyer",
+      "Last Logon": "09.10.2025",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PE017459",
+      "User Name": "17459 - Hemant Yadav",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Buyer",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PE017471",
+      "User Name": "17471 - Arvind Singh Chouhan",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "AP,AR & Costing",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PE017867",
+      "User Name": "17867 - Dipak Kumar",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Purchase",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500PE018034",
+      "User Name": "18034 - Ankit Kumar B",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "PURCHASE",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WC101259",
+      "User Name": "C101259 - 5500WC101259",
+      "License": "HD",
+      "Department": "MM",
+      "Function ": "GATE",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WC102512",
+      "User Name": "C102512 - Sumit Saxana",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "Shop Floor",
+      "Last Logon": "04.04.2025",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WC102513",
+      "User Name": "C102513 - Chandan Gupta",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "Shop Floor",
+      "Last Logon": "08.07.2025",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WC102516",
+      "User Name": "C102516 - Krishna",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "Shop Floor",
+      "Last Logon": "30.01.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WC102911",
+      "User Name": "C102911 - Rabin Singh",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "Shopfloor",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE009235",
+      "User Name": "09235 - Dalip Kumar Sharma",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "25.03.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE009396",
+      "User Name": "09396 - Jalandra Singh",
+      "License": "HD",
+      "Department": "MM",
+      "Function ": "Stores",
+      "Last Logon": "25.12.2024",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE010381",
+      "User Name": "10381 - Satyam Kumar",
+      "License": "HD",
+      "Department": "MM",
+      "Function ": "Stores",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE010592",
+      "User Name": "10592 - Roop Singh",
+      "License": "HD",
+      "Department": "MM",
+      "Function ": "Stores",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE012223",
+      "User Name": "12223 - Sandeep Kumar",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "21.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE012804",
+      "User Name": "12804 - Manjeet Kumar",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE013609",
+      "User Name": "13609 - Deepak Tiwari",
+      "License": "FX",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE015022",
+      "User Name": "15022 - Sachin Gupta",
+      "License": "FX",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "23.05.2024",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE015232",
+      "User Name": "15232 - Anjani Sharma",
+      "License": "FX",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "25.11.2025",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE016000",
+      "User Name": "16000 - Khushwant Sharma",
+      "License": "FX",
+      "Department": "PM",
+      "Function ": "Supervisor",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE016007",
+      "User Name": "16007 - Sandeep Kumar",
+      "License": "FX",
+      "Department": "PP",
+      "Function ": "Shop Floor",
+      "Last Logon": "03.07.2025",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE016135",
+      "User Name": "16135 - Krishna Kumar",
+      "License": "FX",
+      "Department": "PM",
+      "Function ": "Supervisor",
+      "Last Logon": "03.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE016171",
+      "User Name": "16171 - Nishant Sharma",
+      "License": "FX",
+      "Department": "PM",
+      "Function ": "Supervisor",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE016205",
+      "User Name": "16205 - Nishant Yadav",
+      "License": "FX",
+      "Department": "PM",
+      "Function ": "Supervisor",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE016336",
+      "User Name": "16336 - Vijay Kumar Hajare",
+      "License": "FX",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "28.04.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE016463",
+      "User Name": "16463 - Jasvant Singh",
+      "License": "FX",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "21.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE016551",
+      "User Name": "16551 - Gulshan Saini",
+      "License": "FX",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE016588",
+      "User Name": "16588 - Kapil Sharma",
+      "License": "FX",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE016803",
+      "User Name": "16803 - Sandeep Kumar",
+      "License": "FX",
+      "Department": "PP",
+      "Function ": "Shopfloor",
+      "Last Logon": "Not In Use",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE016865",
+      "User Name": "16865 - Ajit Yadav",
+      "License": "FX",
+      "Department": "MM",
+      "Function ": "Stores",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE017148",
+      "User Name": "17148 - Parveen Kumar",
+      "License": "FX",
+      "Department": "PP",
+      "Function ": "Shop Floor",
+      "Last Logon": "21.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE017333",
+      "User Name": "17333 - Satya Prakash O",
+      "License": "FX",
+      "Department": "PP",
+      "Function ": "Shop Floor",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE017558",
+      "User Name": "17558 - Kapil Singh",
+      "License": "HD",
+      "Department": "PM",
+      "Function ": "Supervisor",
+      "Last Logon": "22.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5500WE017673",
+      "User Name": "17673 - Sanjiv Kumar",
+      "License": "FX",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "23.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5520PC102816",
+      "User Name": "C102816 - Umakant S",
+      "License": "AX",
+      "Department": "SD",
+      "Function ": "Marketing",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5520PC102912",
+      "User Name": "C102912 - Jitender A",
+      "License": "AX",
+      "Department": "SD",
+      "Function ": "Despatch",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5530FC102900",
+      "User Name": "C102900 - Lokanath Swain",
+      "License": "HC",
+      "Department": "SD",
+      "Function ": "Mktg & Despatch",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5530FE017283",
+      "User Name": "17283 - Piyush Pal",
+      "License": "HC",
+      "Department": "SD",
+      "Function ": "Mktg & Despatch",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600FE009231",
+      "User Name": "09231 - Kuldeep Tiwari",
+      "License": "HC",
+      "Department": "MM",
+      "Function ": "SubCon Stores",
+      "Last Logon": "24.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600FE013934",
+      "User Name": "13934 - Deepak Chauhan",
+      "License": "HC",
+      "Department": "QM",
+      "Function ": "CHAMPION",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600FE013979",
+      "User Name": "13979 - Ladumor Kishor",
+      "License": "HC",
+      "Department": "MED",
+      "Function ": "MED",
+      "Last Logon": "15.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600FE016065",
+      "User Name": "16065 - Ashvani Kumar",
+      "License": "HC",
+      "Department": "QM",
+      "Function ": "CHAMPION",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600FE016957",
+      "User Name": "16957 - Ganesh I",
+      "License": "HC",
+      "Department": "SD",
+      "Function ": "FG-Store",
+      "Last Logon": "22.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600FE017205",
+      "User Name": "17205 - Rohit Kumar K",
+      "License": "HC",
+      "Department": "MM",
+      "Function ": "Stores",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600FE017447",
+      "User Name": "17447 - Krunal Pravinbhai Vanodiya",
+      "License": "HC",
+      "Department": "QM",
+      "Function ": "Champion",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600FE017581",
+      "User Name": "17581 - Iyer Vinayak Ramachandran R",
+      "License": "HC",
+      "Department": "MM",
+      "Function ": "Subcon Stores",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600FE017848",
+      "User Name": "17848 - Shubham Bhavsar",
+      "License": "HC",
+      "Department": "MM",
+      "Function ": "Subcon Stores",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600LE017240",
+      "User Name": "17240 - Dilipkumar P",
+      "License": "AY",
+      "Department": "MED",
+      "Function ": "MED",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600PE009231",
+      "User Name": "09231 - Kuldeep Tiwari",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Buyer",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600PE014006",
+      "User Name": "14006 - Nitin Varma",
+      "License": "AX",
+      "Department": "PM",
+      "Function ": "CHAMPION",
+      "Last Logon": "21.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600PE014452",
+      "User Name": "14452 - Satish kumar",
+      "License": "AX",
+      "Department": "SD",
+      "Function ": "Dispatch",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600PE016116",
+      "User Name": "16116 - Parameswar Sahoo",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "FI_ALL",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600PE016133",
+      "User Name": "16133 - Arun Mudaliar",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "AP,AR,Payment",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600PE017847",
+      "User Name": "17847 - Jile Singh Dhayal",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "Finance",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600PE017852",
+      "User Name": "17852 - Manish Kumar Paswan",
+      "License": "AX",
+      "Department": "MM",
+      "Function ": "Purchase",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600WC101122",
+      "User Name": "C101122 - 5600WC101122",
+      "License": "FX",
+      "Department": "MM",
+      "Function ": "Gate",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600WE013983",
+      "User Name": "13983 - Pawan Kumar Suryadeo",
+      "License": "FX",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600WE014889",
+      "User Name": "14889 - Narshana Vivek",
+      "License": "FX",
+      "Department": "PM",
+      "Function ": "Supervisor",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600WE014956",
+      "User Name": "14956 - Abhishek Bishnoi",
+      "License": "FX",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600WE014958",
+      "User Name": "14958 - Punit Mani Tripathi",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "SHOP FLOOR",
+      "Last Logon": "23.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600WE016879",
+      "User Name": "16879 - Rathod Kishan Dileepbhai",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "Shopfloor",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600WE016891",
+      "User Name": "16891 - Jogi Prakash Harshadbha",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "Shopfloor",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600WE017206",
+      "User Name": "17206 - Bhatt Nilay",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "Shopfloor",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600WE017258",
+      "User Name": "17258 - Chandni D Koriya",
+      "License": "HD",
+      "Department": "PM",
+      "Function ": "Supervisor",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600WE018016",
+      "User Name": "18016 - Anil Yadav",
+      "License": "AX",
+      "Department": "HCM",
+      "Function ": "HR & PY",
+      "Last Logon": "20.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5600WE018083",
+      "User Name": "18083 - kushal kumar A",
+      "License": "HD",
+      "Department": "PM",
+      "Function ": "Supervisor",
+      "Last Logon": "Not In Use",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5610PC103031",
+      "User Name": "C103031 - Aejaz Khan Malek",
+      "License": "AX",
+      "Department": "SD",
+      "Function ": "Despatch",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5610PE017784",
+      "User Name": "17784 - Harshadkumar Patel",
+      "License": "AX",
+      "Department": "SD",
+      "Function ": "Despatch",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5800FE014526",
+      "User Name": "14526 - P Nithya",
+      "License": "HC",
+      "Department": "MM",
+      "Function ": "Subcon Stores",
+      "Last Logon": "19.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "5800WE014038",
+      "User Name": "14038 - Pranava Guru Sankar G",
+      "License": "HD",
+      "Department": "PP",
+      "Function ": "R & D",
+      "Last Logon": "20.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "7010PC102158",
+      "User Name": "C102158 - D Sylvester Jose",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "Treasury",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "7010PC102204",
+      "User Name": "C102204 - Priyadharshini M",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "Payables",
+      "Last Logon": "22.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "7010PC102794",
+      "User Name": "C102794 - Nishanth Raj B",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "Receivables",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "7010PE012680",
+      "User Name": "12680 - Mahalakshmi G K",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "Receivables",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "7010PE017170",
+      "User Name": "17170 - Subashree V",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "GST",
+      "Last Logon": "22.05.2026",
+      "Group": "RANE_5000"
+    },
+    {
+      "SAP ID": "7010PE017896",
+      "User Name": "17896 - Mahaalaksmi  A",
+      "License": "AX",
+      "Department": "FICO",
+      "Function ": "FINANCE",
+      "Last Logon": "25.05.2026",
+      "Group": "RANE_5000"
+    }
+  ],
+  "limits": {
+    "AX": 78,
+    "AY": 6,
+    "FX": 37,
+    "HC": 83,
+    "HD": 41,
+    "Other": 150
+  }
+}
